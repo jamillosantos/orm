@@ -1,0 +1,24 @@
+version: "1"
+imports:
+  - github.com/setare/orm-types
+  - github.com/setare/orm-pg-types
+records:
+  # User represents all people that has access to the system.
+  #
+  # Users will store only the basic information about the user itself. Nothing
+  # will be encrypted as this is just a test.
+  - name: User
+    fields:
+      - name: "id"
+        type: int
+      - name: "name"
+        type: string
+      - name: "password"
+        type: string
+  - name: Book
+    fields:
+      - "id:string"
+      - name: "name"
+        type: string
+      - name: "password"
+        type: string

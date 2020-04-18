@@ -1,0 +1,40 @@
+{% func Schema(input *SchemaInput) %}
+package {%s input.Package.Name %}
+
+import (
+	"github.com/setare/orm"
+)
+
+{% for _, record := range input.Records -%}
+type {%s record.Schema.Type %} struct {
+{% for _, field := range record.Fields -%}
+	{%s field.GoName %} orm.SchemaField
+{% endfor -%}
+}
+
+var (
+	{%s record.Schema.InternalRef %}Fields = []SchemaField{
+{% for _, field := range record.Fields -%}
+		orm.NewSchemaField("{%s field.Name %}"),
+{% endfor -%}
+	}
+	{%s record.Schema.InternalRef %} = &{%s record.Schema.Type%}{
+		orm.NewSchema("{%j record.TableName %}", {%s record.Schema.InternalRef %}Fields),
+{% for fieldIndex, field := range record.Fields -%}
+		{%s field.GoName %}: {%s record.Schema.InternalRef %}Fields[{%d fieldIndex %}],
+{% endfor -%}
+	}
+)
+{% endfor %}
+
+var Schema  = struct {
+{% for _, record := range input.Records -%}
+	{%s record.Schema.Name %} *{%s record.Schema.Type %}
+{% endfor -%}
+}{
+{% for _, record := range input.Records -%}
+	{%s record.Schema.Name %}: {%s record.Schema.InternalRef %},
+{% endfor -%}
+}
+
+{% endfunc %}

@@ -1,0 +1,16 @@
+{% import "github.com/setare/orm/internal/document" %}
+
+{% func Records(pkg document.Package, records []*document.Record) %}
+package {%s pkg.Name -%}
+
+{% for _, record := range records -%}
+{%- for _, doc := range record.Documentation %}
+// {%s doc -%}
+{%- endfor %}
+type {%s record.Name %} struct {
+{%- for _, field := range record.Fields -%}
+    {%s field.GoName %} {%s field.Type %}
+{% endfor -%}
+}
+{% endfor -%}
+{% endfunc %}
