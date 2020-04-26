@@ -2,8 +2,10 @@ package orm
 
 type Store interface {
 	Insert() error
+	InsertBatch() error
+	Update() error
 }
 
-type BaseStore struct {
+type baseStore struct {
 	//
 }

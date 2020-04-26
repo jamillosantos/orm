@@ -11,6 +11,7 @@ records:
     fields:
       - name: "id"
         type: int
+        autoinc: true
       - name: "name"
         type: string
       - name: "password"

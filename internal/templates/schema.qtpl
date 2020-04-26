@@ -7,6 +7,7 @@ import (
 
 {% for _, record := range input.Records -%}
 type {%s record.Schema.Type %} struct {
+	orm.Schema
 {% for _, field := range record.Fields -%}
 	{%s field.GoName %} orm.SchemaField
 {% endfor -%}

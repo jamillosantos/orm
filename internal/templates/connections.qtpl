@@ -1,0 +1,20 @@
+{% func Connections(input *ConnectionsInput) %}
+package {%s input.Package.Name %}
+
+import (
+	"github.com/setare/orm"
+)
+
+type connection struct {
+	*orm.Connection
+}
+
+{% for _, record := range input.Records %}
+func (conn *connection) {%s record.Query.Type %}() *{%s record.Query.Type %} {
+	return New{%s record.Query.Type %}(conn, {%s record.Schema.InternalRef %})
+}
+{% endfor %}
+
+var DefaultConnection connection
+
+{% endfunc %}

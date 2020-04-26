@@ -43,23 +43,31 @@ type (
 
 	Connection interface {
 		DB() DBProxy
+		Builder() sq.StatementBuilderType
 	}
 
 	BaseConnection struct {
-		_db DBProxy
+		_db      DBProxy
+		_builder sq.StatementBuilderType
 	}
 )
 
 // NewConnection will create a new instance of the `*BaseConnection`.
-func NewConnection(db DBProxy) *BaseConnection {
+func NewConnection(db DBProxy, builder sq.StatementBuilderType) *BaseConnection {
 	return &BaseConnection{
-		_db: db,
+		_db:      db,
+		_builder: builder,
 	}
 }
 
 // DB returns the real connection object for the database connection.
 func (conn *BaseConnection) DB() DBProxy {
 	return conn._db
+}
+
+// Builder returns the Statement Builder used to generate the queries for this connection.
+func (conn *BaseConnection) Builder() sq.StatementBuilderType {
+	return conn._builder
 }
 
 // Begin starts a transaction.

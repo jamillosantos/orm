@@ -1,0 +1,69 @@
+{% func Stores(input *StoresInput) %}
+package {%s input.Package.Name %}
+
+import (
+	"context"
+	"github.com/setare/orm"
+
+	"github.com/pkg/errors"
+)
+
+{% for _, record := range input.Records -%}
+type {%s record.Store.Type %} struct {
+	conn orm.DBProxy
+}
+
+func New{%s record.Store.Type %}(conn orm.Connection) *{%s record.Store.Type %} {
+	return &{%s record.Store.Type %}{
+		conn,
+	}
+}
+
+func (store *{%s record.Store.Type%}) Insert(record *{%s record.Store.Type %}, fields ...SchemaField) error {
+	return store.InsertContext(context.Background(), record, fields...)
+}
+
+func (store *{%s record.Store.Type%}) InsertContext(ctx context.Context, record *{%s record.Store.Type %}, fields ...SchemaField) error {
+	if len(fields) == 0 {
+		fields = {%s record.Schema.InternalRef %}Fields
+	}
+	columnNames := make([]string, len(fields))
+	columnValues := make([]interface{}, len(fields))
+	var err error
+	for i, field := range fields {
+		var fieldAddr interface{}
+		{%= ColumnAddresses(&ColumnAddressesInput{
+			FieldName: "field.Name",
+			TargetName: "fieldAddr",
+			RecordName: "record",
+			ErrName: "err",
+			Record: record,
+		}) %}
+		if err != nil {
+			return err
+		}
+		columnNames[i] = field.String()
+		columnValues[i] = fieldAddr
+	}
+	builder := conn.Builder().Insert({%s record.Schema.InternalRef %}.Table()).Columns(columnNames...).Values(columnValues...){% if record.FieldAutoInc != nil %}.Suffix("RETURNING {%s record.FieldAutoInc.Name %}"){% endif %}
+
+	sql, args, err := builder.ToSql()
+	if err != nil {
+		return err
+	}
+{% if record.FieldAutoInc == nil %}
+	_, err := conn.ExecContext(ctx, sql, args...)
+	return err
+{% else %}
+	var id {%s record.FieldAutoInc.Type %}
+	err := conn.QueryRow(ctx, sql, args...).Scan(&id)
+	if err != nil {
+		return err
+	}
+	record.{%s record.FieldAutoInc.GoName %} = id
+	return nil
+{% endif %}
+}
+
+{% endfor -%}
+{% endfunc %}

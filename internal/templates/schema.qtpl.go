@@ -40,152 +40,153 @@ import (
 		qw422016.E().S(record.Schema.Type)
 //line schema.qtpl:9
 		qw422016.N().S(` struct {
+	orm.Schema
 `)
-//line schema.qtpl:10
+//line schema.qtpl:11
 		for _, field := range record.Fields {
-//line schema.qtpl:10
+//line schema.qtpl:11
 			qw422016.N().S(`	`)
-//line schema.qtpl:11
+//line schema.qtpl:12
 			qw422016.E().S(field.GoName)
-//line schema.qtpl:11
+//line schema.qtpl:12
 			qw422016.N().S(` orm.SchemaField
 `)
-//line schema.qtpl:12
+//line schema.qtpl:13
 		}
-//line schema.qtpl:12
+//line schema.qtpl:13
 		qw422016.N().S(`}
 
 var (
 	`)
-//line schema.qtpl:16
+//line schema.qtpl:17
 		qw422016.E().S(record.Schema.InternalRef)
-//line schema.qtpl:16
+//line schema.qtpl:17
 		qw422016.N().S(`Fields = []SchemaField{
 `)
-//line schema.qtpl:17
+//line schema.qtpl:18
 		for _, field := range record.Fields {
-//line schema.qtpl:17
+//line schema.qtpl:18
 			qw422016.N().S(`		orm.NewSchemaField("`)
-//line schema.qtpl:18
+//line schema.qtpl:19
 			qw422016.E().S(field.Name)
-//line schema.qtpl:18
+//line schema.qtpl:19
 			qw422016.N().S(`"),
 `)
-//line schema.qtpl:19
+//line schema.qtpl:20
 		}
-//line schema.qtpl:19
+//line schema.qtpl:20
 		qw422016.N().S(`	}
 	`)
-//line schema.qtpl:21
+//line schema.qtpl:22
 		qw422016.E().S(record.Schema.InternalRef)
-//line schema.qtpl:21
+//line schema.qtpl:22
 		qw422016.N().S(` = &`)
-//line schema.qtpl:21
+//line schema.qtpl:22
 		qw422016.E().S(record.Schema.Type)
-//line schema.qtpl:21
+//line schema.qtpl:22
 		qw422016.N().S(`{
 		orm.NewSchema("`)
-//line schema.qtpl:22
+//line schema.qtpl:23
 		qw422016.E().J(record.TableName)
-//line schema.qtpl:22
+//line schema.qtpl:23
 		qw422016.N().S(`", `)
-//line schema.qtpl:22
+//line schema.qtpl:23
 		qw422016.E().S(record.Schema.InternalRef)
-//line schema.qtpl:22
+//line schema.qtpl:23
 		qw422016.N().S(`Fields),
 `)
-//line schema.qtpl:23
+//line schema.qtpl:24
 		for fieldIndex, field := range record.Fields {
-//line schema.qtpl:23
+//line schema.qtpl:24
 			qw422016.N().S(`		`)
-//line schema.qtpl:24
+//line schema.qtpl:25
 			qw422016.E().S(field.GoName)
-//line schema.qtpl:24
+//line schema.qtpl:25
 			qw422016.N().S(`: `)
-//line schema.qtpl:24
+//line schema.qtpl:25
 			qw422016.E().S(record.Schema.InternalRef)
-//line schema.qtpl:24
+//line schema.qtpl:25
 			qw422016.N().S(`Fields[`)
-//line schema.qtpl:24
+//line schema.qtpl:25
 			qw422016.N().D(fieldIndex)
-//line schema.qtpl:24
+//line schema.qtpl:25
 			qw422016.N().S(`],
 `)
-//line schema.qtpl:25
+//line schema.qtpl:26
 		}
-//line schema.qtpl:25
+//line schema.qtpl:26
 		qw422016.N().S(`	}
 )
 `)
-//line schema.qtpl:28
+//line schema.qtpl:29
 	}
-//line schema.qtpl:28
+//line schema.qtpl:29
 	qw422016.N().S(`
 
 var Schema  = struct {
 `)
-//line schema.qtpl:31
+//line schema.qtpl:32
 	for _, record := range input.Records {
-//line schema.qtpl:31
+//line schema.qtpl:32
 		qw422016.N().S(`	`)
-//line schema.qtpl:32
+//line schema.qtpl:33
 		qw422016.E().S(record.Schema.Name)
-//line schema.qtpl:32
+//line schema.qtpl:33
 		qw422016.N().S(` *`)
-//line schema.qtpl:32
+//line schema.qtpl:33
 		qw422016.E().S(record.Schema.Type)
-//line schema.qtpl:32
+//line schema.qtpl:33
 		qw422016.N().S(`
 `)
-//line schema.qtpl:33
+//line schema.qtpl:34
 	}
-//line schema.qtpl:33
+//line schema.qtpl:34
 	qw422016.N().S(`}{
 `)
-//line schema.qtpl:35
+//line schema.qtpl:36
 	for _, record := range input.Records {
-//line schema.qtpl:35
+//line schema.qtpl:36
 		qw422016.N().S(`	`)
-//line schema.qtpl:36
+//line schema.qtpl:37
 		qw422016.E().S(record.Schema.Name)
-//line schema.qtpl:36
+//line schema.qtpl:37
 		qw422016.N().S(`: `)
-//line schema.qtpl:36
+//line schema.qtpl:37
 		qw422016.E().S(record.Schema.InternalRef)
-//line schema.qtpl:36
+//line schema.qtpl:37
 		qw422016.N().S(`,
 `)
-//line schema.qtpl:37
+//line schema.qtpl:38
 	}
-//line schema.qtpl:37
+//line schema.qtpl:38
 	qw422016.N().S(`}
 
 `)
-//line schema.qtpl:40
+//line schema.qtpl:41
 }
 
-//line schema.qtpl:40
+//line schema.qtpl:41
 func WriteSchema(qq422016 qtio422016.Writer, input *SchemaInput) {
-//line schema.qtpl:40
+//line schema.qtpl:41
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line schema.qtpl:40
+//line schema.qtpl:41
 	StreamSchema(qw422016, input)
-//line schema.qtpl:40
+//line schema.qtpl:41
 	qt422016.ReleaseWriter(qw422016)
-//line schema.qtpl:40
+//line schema.qtpl:41
 }
 
-//line schema.qtpl:40
+//line schema.qtpl:41
 func Schema(input *SchemaInput) string {
-//line schema.qtpl:40
+//line schema.qtpl:41
 	qb422016 := qt422016.AcquireByteBuffer()
-//line schema.qtpl:40
+//line schema.qtpl:41
 	WriteSchema(qb422016, input)
-//line schema.qtpl:40
+//line schema.qtpl:41
 	qs422016 := string(qb422016.B)
-//line schema.qtpl:40
+//line schema.qtpl:41
 	qt422016.ReleaseByteBuffer(qb422016)
-//line schema.qtpl:40
+//line schema.qtpl:41
 	return qs422016
-//line schema.qtpl:40
+//line schema.qtpl:41
 }

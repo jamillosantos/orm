@@ -1,0 +1,113 @@
+{% func Queries(input *QueriesInput) %}
+package {%s input.Package.Name %}
+
+import (
+	"github.com/setare/orm"
+)
+
+{% for _, record := range input.Records -%}
+type {%s record.Query.Type %} struct {
+	Conn orm.DBProxy
+	query orm.Query
+}
+
+func New{%s record.Query.Type %}(conn orm.Connection) *{%s record.Query.Type %} {
+	return &{%s record.Query.Type %}{
+		Conn: conn,
+		query: orm.NewQuery({%s record.Schema.InternalRef %}),
+	}
+}
+
+func (query *{%s record.Query.Type%}) Select(fields ...SchemaField) *{%s record.Query.Type %} {
+	query.BaseQuery.Select(fields...)
+	return query
+}
+
+func (query *{%s record.Query.Type%}) AddSelect(fields ...SchemaField) *{%s record.Query.Type %} {
+	query.BaseQuery.AddSelect(fields...)
+	return query
+}
+
+func (query *{%s record.Query.Type%}) From(schema Schema) *{%s record.Query.Type %} {
+	query.BaseQuery.From(schema)
+	return query
+}
+
+func (query *{%s record.Query.Type%}) Join(joinType JoinType, schema Schema, conditions ...sq.Sqlizer) *{%s record.Query.Type %} {
+	query.BaseQuery.Join(joinType, schema, conditions...)
+	return query
+}
+
+func (query *{%s record.Query.Type%}) InnerJoin(schema Schema, conditions ...sq.Sqlizer) *{%s record.Query.Type %} {
+	query.BaseQuery.InnerJoin(schema, conditions...)
+	return query
+}
+
+func (query *{%s record.Query.Type%}) LeftJoin(schema Schema, conditions ...sq.Sqlizer) *{%s record.Query.Type %} {
+	query.BaseQuery.LeftJoin(schema, conditions...)
+	return query
+}
+
+func (query *{%s record.Query.Type%}) RightJoin(schema Schema, conditions ...sq.Sqlizer) *{%s record.Query.Type %} {
+	query.BaseQuery.RightJoin(schema, conditions...)
+	return query
+}
+
+func (query *{%s record.Query.Type%}) FullJoin(schema Schema, conditions ...sq.Sqlizer) *{%s record.Query.Type %} {
+	query.BaseQuery.FullJoin(schema, conditions...)
+	return query
+}
+
+func (query *{%s record.Query.Type%}) Where(conditions ...sq.Sqlizer) *{%s record.Query.Type %} {
+	query.BaseQuery.Where(conditions...)
+	return query
+}
+
+func (query *{%s record.Query.Type%}) Skip(skip int) *{%s record.Query.Type %} {
+	query.BaseQuery.Skip(skip)
+	return query
+}
+
+func (query *{%s record.Query.Type%}) Limit(limit int) *{%s record.Query.Type %} {
+	query.BaseQuery.Limit(limit)
+	return query
+}
+
+func (query *{%s record.Query.Type%}) GroupBy(fields ...SchemaField) *{%s record.Query.Type %} {
+	query.BaseQuery.GroupBy(fields...)
+	return query
+}
+
+func (query *{%s record.Query.Type%}) GroupByHaving(fields []SchemaField, conditions ...sq.Sqlizer) *{%s record.Query.Type %} {
+	query.BaseQuery.GroupByHaving(fields, conditions...)
+	return query
+}
+
+func (query *{%s record.Query.Type%}) OrderBy(fields ...SchemaField) *{%s record.Query.Type %} {
+	query.BaseQuery.OrderBy(fields...)
+	return query
+}
+
+func (query *{%s record.Query.Type%}) One() (*{%s record.Name %}, error) {
+	record := &{%s record.Name %}
+	err := query.OneP(record)
+	if err != nil {
+		return nil, err
+	}
+	return record, nil
+}
+
+func (query *{%s record.Query.Type%}) OneP(record *{%s record.Name %}) (error) {
+	//
+}
+
+func (query *{%s record.Query.Type%}) All() ([]*{%s record.Name %}, error) {
+	//
+}
+
+func (query *{%s record.Query.Type%}) AllP(records []*{%s record.Name %}) (error) {
+	//
+}
+
+{% endfor -%}
+{% endfunc %}

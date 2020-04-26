@@ -1,0 +1,9 @@
+{% func ColumnAddresses(input *ColumnAddressesInput) -%}
+switch {%s input.FieldName %} {
+{% for _, field := range input.Record.Fields -%}
+    case "{%s field.Name %}":
+        {%s input.TargetName %} = &{%s input.RecordName %}.{%s field.GoName %}
+{% endfor -%}
+    default:
+        {%s input.ErrName %} = errors.Wrap(orm.ErrFieldNotFound, {%j input.FieldName %})
+}{% endfunc %}

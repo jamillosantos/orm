@@ -1,0 +1,15 @@
+{% func ResultSet(input *ResultSetInput) %}
+package {%s input.Package.Name %}
+
+import (
+	"database/sql"
+	"github.com/setare/orm"
+)
+
+{% for _, record := range input.Records -%}
+type {%s record.ResultSet.Type %} interface {
+	To{%s record.Name %}(*sql.Rows,{%s record.Name %}) error
+}
+
+{% endfor -%}
+{% endfunc %}

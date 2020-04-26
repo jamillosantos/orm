@@ -1,6 +1,7 @@
 package document
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/gertd/go-pluralize"
@@ -9,21 +10,26 @@ import (
 )
 
 var (
-	ErrInvalidField = errors.New("invalid field")
+	ErrInvalidField        = errors.New("invalid field")
+	ErrOnlyOneAutoIncField = errors.New("only one autoinc field is allowed")
 
 	plrzClient = pluralize.NewClient()
 )
 
 // Record represents a record.
 type Record struct {
-	Document            *Document `yaml:"-"`
-	Schema              *Schema   `yaml:"-"`
-	Name                string    `yaml:"name"`
-	TableName           string    `yaml:"table_name"`
-	Documentation       []string  `yaml:"-"`
-	Fields              []*Field  `yaml:"fields"`
-	FieldsNameMaxLength int       `yaml:"-"`
-	FieldsTypeMaxLength int       `yaml:"-"`
+	Document            *Document  `yaml:"-"`
+	Schema              *Schema    `yaml:"-"`
+	Query               *Query     `yaml:"-"`
+	Store               *Store     `yaml:"-"`
+	ResultSet           *ResultSet `yaml:"-"`
+	Name                string     `yaml:"name"`
+	TableName           string     `yaml:"table_name"`
+	Documentation       []string   `yaml:"-"`
+	Fields              []*Field   `yaml:"fields"`
+	FieldAutoInc        *Field     `yaml:"-"`
+	FieldsNameMaxLength int        `yaml:"-"`
+	FieldsTypeMaxLength int        `yaml:"-"`
 }
 
 // UnmarshalYAML
@@ -83,15 +89,25 @@ func (record *Record) UnmarshalYAML(value *yaml.Node) error {
 		Type:        "schema" + record.Name,
 		InternalRef: "defaultSchema" + record.Name,
 	}
+	record.Query = &Query{
+		Type: record.Name + "Query",
+	}
+	record.Store = &Store{
+		Type: record.Name + "Store",
+	}
+	record.ResultSet = &ResultSet{
+		Type: record.Name + "ResultSet",
+	}
 	return nil
 }
 
 // Field represents a field in the yaml file.
 type Field struct {
-	Record *Record `yaml:"-"`
-	GoName string  `yaml:"go_name"`
-	Name   string  `yaml:"name"`
-	Type   string  `yaml:"type"`
+	Record  *Record `yaml:"-"`
+	GoName  string  `yaml:"go_name"`
+	Name    string  `yaml:"name"`
+	Type    string  `yaml:"type"`
+	AutoInc bool    `yaml:"auto_inc"`
 }
 
 // UnmarshalYAML
@@ -121,6 +137,20 @@ func (field *Field) UnmarshalYAML(value *yaml.Node) error {
 				field.Type = value.Content[i].Value
 				if len(field.Type) > field.Record.FieldsTypeMaxLength {
 					field.Record.FieldsTypeMaxLength = len(field.Type)
+				}
+			case "autoinc":
+				i++
+				ai, err := strconv.ParseBool(value.Content[i].Value)
+				if err != nil {
+					return err // TODO(Jota): Wrap this with an proper error (with locatio too).
+				}
+				field.AutoInc = ai
+				if ai {
+					if field.Record.FieldAutoInc != nil {
+						// TODO(Jota): Add the line information on this error.
+						return errors.Wrap(ErrOnlyOneAutoIncField, field.Name)
+					}
+					field.Record.FieldAutoInc = field
 				}
 			default:
 				// TODO(Jota): Add the line information on this error.

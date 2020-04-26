@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"go/build"
 	"go/format"
+	"go/scanner"
+	"io"
 	"os"
 
 	"github.com/setare/orm/internal/document"
@@ -19,6 +21,46 @@ var (
 	modelsDirectory string
 	outputDirectory string
 )
+
+func processGenerator(g generator.Generator, ctx generator.Context, output io.Writer) error {
+	buff := bytes.NewBuffer(nil)
+	if err := g.Generate(buff, &ctx); err != nil {
+		return err
+	}
+
+	data, err := format.Source(buff.Bytes())
+	if errList, ok := err.(scanner.ErrorList); ok {
+		for _, err := range errList {
+			fmt.Fprint(os.Stderr, err.Error())
+			fmt.Println()
+		}
+		// var errScanner fom.Error
+		for i := 1; ; i++ {
+			line, err := buff.ReadString('\n')
+			if err == io.EOF {
+				break
+			} else if err != nil {
+				return err
+			}
+			errLine := false
+			for _, err := range errList {
+				if err.Pos.Line == i {
+					fmt.Fprint(os.Stdout, "\x1b[91m")
+					errLine = true
+				}
+			}
+			fmt.Fprintf(os.Stdout, "%d. %s", i, line)
+			if errLine {
+				fmt.Fprint(os.Stdout, "\x1b[39m")
+			}
+		}
+		panic(err)
+	} else if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+	}
+	output.Write(data)
+	return nil
+}
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -103,26 +145,40 @@ to quickly create a Cobra application.`,
 			}
 		*/
 
+		fmt.Println("Models")
+		fmt.Println("======")
 		var modelGenerator generator.ModelGenerator
-		err = modelGenerator.Generate(os.Stdout, &gctx)
-		if err != nil {
-			panic(err)
-		}
+		processGenerator(&modelGenerator, gctx, os.Stdout)
 
+		fmt.Println()
+		fmt.Println("Schema")
+		fmt.Println("======")
 		var schemaGenerator generator.SchemaGenerator
-		buff := bytes.NewBuffer(nil)
-		err = schemaGenerator.Generate(buff, &gctx)
-		if err != nil {
-			panic(err)
-		}
+		processGenerator(&schemaGenerator, gctx, os.Stdout)
 
-		data, err := format.Source(buff.Bytes())
-		if err != nil {
-			fmt.Fprint(os.Stderr, err.Error())
-			os.Stdout.Write(buff.Bytes())
-			panic(err)
-		}
-		os.Stdout.Write(data)
+		fmt.Println()
+		fmt.Println("Queries")
+		fmt.Println("=======")
+		var queriesGenerator generator.QueriesGenerator
+		processGenerator(&queriesGenerator, gctx, os.Stdout)
+
+		fmt.Println()
+		fmt.Println("Connections")
+		fmt.Println("===========")
+		var connectionsGenerator generator.ConnectionsGenerator
+		processGenerator(&connectionsGenerator, gctx, os.Stdout)
+
+		fmt.Println()
+		fmt.Println("ResultSet")
+		fmt.Println("=========")
+		var resultSetGenerator generator.ResultSetGenerator
+		processGenerator(&resultSetGenerator, gctx, os.Stdout)
+
+		fmt.Println()
+		fmt.Println("Store")
+		fmt.Println("=========")
+		var storeGenerator generator.StoresGenerator
+		processGenerator(&storeGenerator, gctx, os.Stdout)
 	},
 }
 
