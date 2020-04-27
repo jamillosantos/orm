@@ -12,14 +12,16 @@ records:
       - name: "id"
         type: int
         autoinc: true
+        pk: true
       - name: "name"
         type: string
       - name: "password"
         type: string
   - name: Book
     fields:
-      - "id:string"
-      - name: "name"
-        type: string
-      - name: "password"
-        type: string
+      - name: id
+        type: int
+        autoinc: true
+        pk: true
+      - "name:string"
+      - "password:string"

@@ -2,9 +2,9 @@
 package {%s input.Package.Name %}
 
 import (
-	"context"
 	"github.com/setare/orm"
 
+	"context"
 	"github.com/pkg/errors"
 )
 
@@ -45,24 +45,61 @@ func (store *{%s record.Store.Type%}) InsertContext(ctx context.Context, record 
 		columnNames[i] = field.String()
 		columnValues[i] = fieldAddr
 	}
-	builder := conn.Builder().Insert({%s record.Schema.InternalRef %}.Table()).Columns(columnNames...).Values(columnValues...){% if record.FieldAutoInc != nil %}.Suffix("RETURNING {%s record.FieldAutoInc.Name %}"){% endif %}
+	builder := store.conn.Builder().Insert({%s record.Schema.InternalRef %}.Table()).Columns(columnNames...).Values(columnValues...){% if record.FieldAutoInc != nil %}.Suffix("RETURNING {%s record.FieldAutoInc.Name %}"){% endif %}
 
 	sql, args, err := builder.ToSql()
 	if err != nil {
 		return err
 	}
 {% if record.FieldAutoInc == nil %}
-	_, err := conn.ExecContext(ctx, sql, args...)
+	_, err := store.conn.ExecContext(ctx, sql, args...)
 	return err
 {% else %}
 	var id {%s record.FieldAutoInc.Type %}
-	err := conn.QueryRow(ctx, sql, args...).Scan(&id)
+	err := store.conn.QueryRow(ctx, sql, args...).Scan(&id)
 	if err != nil {
 		return err
 	}
 	record.{%s record.FieldAutoInc.GoName %} = id
 	return nil
 {% endif %}
+}
+
+func (store *{%s record.Store.Type%}) Update(record *{%s record.Store.Type %}, fields ...SchemaField) (int64, error) {
+	return store.UpdateContext(context.Background(), record, fields...)
+}
+
+func (store *{%s record.Store.Type%}) UpdateContext(ctx context.Context, record *{%s record.Store.Type %}, fields ...SchemaField) (int64, error) {
+	if len(fields) == 0 {
+		fields = {%s record.Schema.InternalRef %}Fields
+	}
+	columnNames := make([]string, len(fields))
+	columnValues := make([]interface{}, len(fields))
+
+	builder := store.conn.Builder().Update({%s record.Schema.InternalRef %}.Table())
+	var err error
+	for i, field := range fields {
+		var fieldAddr interface{}
+		{%= ColumnAddresses(&ColumnAddressesInput{
+			FieldName: "field.Name",
+			TargetName: "fieldAddr",
+			RecordName: "record",
+			ErrName: "err",
+			Record: record,
+		}) %}
+		if err != nil {
+			return err
+		}
+		builder = builder.Set(field.String(), fieldAddr)
+	}
+{% for _, field := range record.PrimaryKey %}
+	builder.Where(query.Eq(query.Raw("{%j field.Name %}"), record.{%s field.GoName %}))
+{% endfor %}
+	r, err := builder.ExecContext(ctx)
+	if err != nil {
+		return err
+	}
+	return r.RowsAffected()
 }
 
 {% endfor -%}

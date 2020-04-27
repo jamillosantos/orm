@@ -67,7 +67,7 @@ func (conn *BaseConnection) DB() DBProxy {
 
 // Builder returns the Statement Builder used to generate the queries for this connection.
 func (conn *BaseConnection) Builder() sq.StatementBuilderType {
-	return conn._builder
+	return conn._builder.RunWith(conn)
 }
 
 // Begin starts a transaction.

@@ -27,6 +27,7 @@ type Record struct {
 	TableName           string     `yaml:"table_name"`
 	Documentation       []string   `yaml:"-"`
 	Fields              []*Field   `yaml:"fields"`
+	PrimaryKey          []*Field   `yaml:"-"`
 	FieldAutoInc        *Field     `yaml:"-"`
 	FieldsNameMaxLength int        `yaml:"-"`
 	FieldsTypeMaxLength int        `yaml:"-"`
@@ -103,11 +104,12 @@ func (record *Record) UnmarshalYAML(value *yaml.Node) error {
 
 // Field represents a field in the yaml file.
 type Field struct {
-	Record  *Record `yaml:"-"`
-	GoName  string  `yaml:"go_name"`
-	Name    string  `yaml:"name"`
-	Type    string  `yaml:"type"`
-	AutoInc bool    `yaml:"auto_inc"`
+	Record     *Record `yaml:"-"`
+	GoName     string  `yaml:"go_name"`
+	Name       string  `yaml:"name"`
+	Type       string  `yaml:"type"`
+	AutoInc    bool    `yaml:"auto_inc"`
+	PrimaryKey bool    `yaml:"pk"`
 }
 
 // UnmarshalYAML
@@ -142,7 +144,7 @@ func (field *Field) UnmarshalYAML(value *yaml.Node) error {
 				i++
 				ai, err := strconv.ParseBool(value.Content[i].Value)
 				if err != nil {
-					return err // TODO(Jota): Wrap this with an proper error (with locatio too).
+					return err // TODO(Jota): Wrap this with an proper error (with location too).
 				}
 				field.AutoInc = ai
 				if ai {
@@ -151,6 +153,16 @@ func (field *Field) UnmarshalYAML(value *yaml.Node) error {
 						return errors.Wrap(ErrOnlyOneAutoIncField, field.Name)
 					}
 					field.Record.FieldAutoInc = field
+				}
+			case "pk":
+				i++
+				pk, err := strconv.ParseBool(value.Content[i].Value)
+				if err != nil {
+					return err // TODO(Jota): Wrap this with an proper error (with location too).
+				}
+				field.PrimaryKey = pk
+				if pk {
+					field.Record.PrimaryKey = append(field.Record.PrimaryKey, field)
 				}
 			default:
 				// TODO(Jota): Add the line information on this error.
