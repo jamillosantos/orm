@@ -6,6 +6,7 @@ import (
 
 	"context"
 	"github.com/pkg/errors"
+	sq "github.com/Masterminds/squirrel"
 )
 
 {% for _, record := range input.Records -%}
@@ -95,6 +96,54 @@ func (store *{%s record.Store.Type%}) UpdateContext(ctx context.Context, record 
 {% for _, field := range record.PrimaryKey %}
 	builder.Where(query.Eq(query.Raw("{%j field.Name %}"), record.{%s field.GoName %}))
 {% endfor %}
+	r, err := builder.ExecContext(ctx)
+	if err != nil {
+		return err
+	}
+	return r.RowsAffected()
+}
+
+func (store *{%s record.Store.Type%}) Delete(records ...*{%s record.Store.Type %}) (int64, error) {
+	return store.DeleteContext(context.Background(), records)
+}
+
+func (store *{%s record.Store.Type%}) DeleteContext(ctx context.Context, records *{%s record.Store.Type %}) (int64, error) {
+	builder := store.conn.Builder().Delete({%s record.Schema.InternalRef %}.Table())
+	if len(records) > 1 {
+		ids := make([]interface{}, len(record) * {%d len(record.PrimaryKey) %})
+
+{% if len(record.PrimaryKey) == 1 %}
+		for i, record := range records {
+			ids[i] = record.{%s record.PrimaryKey[0].GoName %}
+		}
+		builder = builder.Where(query.In(query.Raw("{%j record.PrimaryKey[0].Name %}"), ids))
+{% else %}
+		ors := make([]sq.Sqlizer, 0, len(reocrds))
+{%- for i, field := range record.PrimaryKey -%}
+		field{%d i %} := query.Raw("{%j field.Name %}")
+{%- endfor -%}
+		for i, record := range records {
+			ors[i] = query.And(
+{%- for i, field := range record.PrimaryKey -%}
+				query.Eq(field{%d i %}, records[0].{%s field.GoName %}),
+{%- endfor -%}
+			)
+		}
+		builder = builder.Where(ors)
+{% endif %}
+	} else if len(records) == 1 {
+{% if len(record.PrimaryKey) == 1 -%}
+		builder = builder.Where(query.Eq(query.Raw("{%j record.PrimaryKey[0].Name %}"), records[0].{%s record.PrimaryKey[0].GoName %}))
+{% else %}
+		builder = builder
+{%- for _, field := range record.PrimaryKey -%}
+	.Where(query.In(query.Raw("{%j field.Name %}"), records[0].{%s field.GoName %}))
+{%- endfor -%}
+{% endif -%}
+	} else {
+		return nil
+	}
+
 	r, err := builder.ExecContext(ctx)
 	if err != nil {
 		return err
