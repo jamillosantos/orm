@@ -49,6 +49,10 @@ type Query interface {
 	OrderBy(fields ...SchemaField)
 }
 
+type DefaultScoper interface {
+	DefaultScope() error
+}
+
 type join struct {
 	joinType   JoinType
 	schema     Schema

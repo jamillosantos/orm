@@ -11,11 +11,20 @@ type {%s record.Query.Type %} struct {
 	query orm.Query
 }
 
-func New{%s record.Query.Type %}(conn orm.Connection) *{%s record.Query.Type %} {
-	return &{%s record.Query.Type %}{
+func New{%s record.Query.Type %}(conn orm.Connection) (*{%s record.Query.Type %}, error) {
+	qry := &{%s record.Query.Type %}{
 		Conn: conn,
 		query: orm.NewQuery({%s record.Schema.InternalRef %}),
 	}
+	ds, ok := qry.(orm.DefaultScoper)
+	if !ok {
+		return qry, nil
+	}
+	err := ds.DefaultScope()
+	if err != nil {
+		return nil, err
+	}
+	return qry, nil
 }
 
 func (query *{%s record.Query.Type%}) Select(fields ...SchemaField) *{%s record.Query.Type %} {
