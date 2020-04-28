@@ -2,13 +2,49 @@
 package {%s input.Package.Name %}
 
 import (
-	"database/sql"
 	"github.com/setare/orm"
+
+	"database/sql"
 )
 
 {% for _, record := range input.Records -%}
-type {%s record.ResultSet.Type %} interface {
-	To{%s record.Name %}(*sql.Rows,{%s record.Name %}) error
+type {%s record.ResultSet.Type %} struct {
+	orm.ResultSet
+	columns []string
+	fields []interface{}
+}
+
+func New{%s record.ResultSet.Type %}(rs orm.ResultSet) ({%s record.ResultSet.Type %}, error) {
+	columns, err := rs.Columns()
+	if err != nil {
+		return nil, err
+	}
+	return &{%s record.ResultSet.Type %}{
+		ResultSet: rs,
+		columns: columns,
+		fields: make([]interface{}, len(columns)),
+	}
+}
+
+func (rs *{%s record.ResultSet.Type %}) Scan(record *{%s record.Name %}) error {
+	err := rs.ResultSet.Err()
+	if err != nil {
+		return err
+	}
+
+	for i, column := range rs.columns {
+		{%= ColumnAddresses(&ColumnAddressesInput{
+			FieldName: "field.Name",
+			TargetName: "rs.fields[i]",
+			RecordName: "record",
+			ErrName: "err",
+			Record: record,
+		}) %}
+		if err != nil {
+			return err
+		}
+	}
+	return rs.ResultSet.Scan(rs.fields...)
 }
 
 {% endfor -%}

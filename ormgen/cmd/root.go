@@ -155,30 +155,30 @@ to quickly create a Cobra application.`,
 		fmt.Println("======")
 		var schemaGenerator generator.SchemaGenerator
 		processGenerator(&schemaGenerator, gctx, os.Stdout)
+		
+		fmt.Println()
+		fmt.Println("Connections")
+		fmt.Println("===========")
+		var connectionsGenerator generator.ConnectionsGenerator
+		processGenerator(&connectionsGenerator, gctx, os.Stdout)
+		
+		fmt.Println()
+		fmt.Println("ResultSet")
+		fmt.Println("=========")
+		var resultSetGenerator generator.ResultSetGenerator
+		processGenerator(&resultSetGenerator, gctx, os.Stdout)
+		
+		fmt.Println()
+		fmt.Println("Store")
+		fmt.Println("=========")
+		var storeGenerator generator.StoresGenerator
+		processGenerator(&storeGenerator, gctx, os.Stdout)
 
 		fmt.Println()
 		fmt.Println("Queries")
 		fmt.Println("=======")
 		var queriesGenerator generator.QueriesGenerator
 		processGenerator(&queriesGenerator, gctx, os.Stdout)
-
-		fmt.Println()
-		fmt.Println("Connections")
-		fmt.Println("===========")
-		var connectionsGenerator generator.ConnectionsGenerator
-		processGenerator(&connectionsGenerator, gctx, os.Stdout)
-
-		fmt.Println()
-		fmt.Println("ResultSet")
-		fmt.Println("=========")
-		var resultSetGenerator generator.ResultSetGenerator
-		processGenerator(&resultSetGenerator, gctx, os.Stdout)
-
-		fmt.Println()
-		fmt.Println("Store")
-		fmt.Println("=========")
-		var storeGenerator generator.StoresGenerator
-		processGenerator(&storeGenerator, gctx, os.Stdout)
 	},
 }
 

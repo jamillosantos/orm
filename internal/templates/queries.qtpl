@@ -98,7 +98,7 @@ func (query *{%s record.Query.Type%}) OrderBy(fields ...SchemaField) *{%s record
 }
 
 func (query *{%s record.Query.Type%}) One() (*{%s record.Name %}, error) {
-	record := &{%s record.Name %}
+	record := &{%s record.Name %}{}
 	err := query.OneP(record)
 	if err != nil {
 		return nil, err
@@ -106,16 +106,47 @@ func (query *{%s record.Query.Type%}) One() (*{%s record.Name %}, error) {
 	return record, nil
 }
 
-func (query *{%s record.Query.Type%}) OneP(record *{%s record.Name %}) (error) {
-	//
+func (query *{%s record.Query.Type%}) OneP(record *{%s record.Name %}) error {
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return err
+	}
+	fields := query.BaseQuery.GetSelect()
+	if len(fields) == 0 {
+		fields = {%s record.Schema.InternalRef %}Fields
+	}
+	fieldsAddr := make([]interface{}, len(fields))
+	for i, field := range fields {
+		var fieldAddr interface{}
+		{%= ColumnAddresses(&ColumnAddressesInput{
+			FieldName: "field.Name",
+			TargetName: "fieldAddr",
+			RecordName: "record",
+			ErrName: "err",
+			Record: record,
+		}) %}
+		if err != nil {
+			return err
+		}
+		columnValues[i] = fieldAddr
+	}
+	return query.conn.QueryRow(sql, args...).Scan(fieldsAddr...)
 }
 
-func (query *{%s record.Query.Type%}) All() ([]*{%s record.Name %}, error) {
-	//
+func (query *{%s record.Query.Type%}) All() ({%s record.ResultSet.Type %}, error) {
+	return query.AllContext(context.Background())
 }
 
-func (query *{%s record.Query.Type%}) AllP(records []*{%s record.Name %}) (error) {
-	//
+func (query *{%s record.Query.Type%}) AllContext(ctx context.Context) ({%s record.ResultSet.Type %}, error) {
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return nil, err
+	}
+	rs, err := query.conn.QueryContext(ctx, sql, args...)
+	if err != nil {
+		return nil, err
+	}
+	return New{%s record.ResultSet.Type %}(rs), nil
 }
 
 {% endfor -%}

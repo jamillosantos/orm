@@ -23,6 +23,8 @@ type Query interface {
 	Select(fields ...SchemaField)
 	// AddSelect adds the passed fields to the select list.
 	AddSelect(fields ...SchemaField)
+	// GetSelect returns the fields that where selected.
+	GetSelect() []SchemaField
 	// From defines the FROM clause for the Query
 	From(schema Schema)
 	// Join adds a join to the Query.
