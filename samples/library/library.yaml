@@ -1,4 +1,8 @@
 version: "1"
+output:
+  package: "github.com/setare/orm"
+  model: "samples/library/code/models/models_gen.go"
+  directory: "samples/library/code/db"
 imports:
   - github.com/setare/orm-types
   - github.com/setare/orm-pg-types

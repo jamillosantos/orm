@@ -29,6 +29,13 @@ type baseSchema struct {
 	columnArr []SchemaField
 }
 
+func NewSchema(table string, fields ...SchemaField) Schema {
+	return &baseSchema{
+		tableName: table,
+		columnArr: fields,
+	}
+}
+
 type aliasSchema struct {
 	schema Schema
 	alias  string
@@ -70,4 +77,28 @@ func (schema *aliasSchema) As(alias string) Schema {
 
 func (schema *aliasSchema) Columns() []SchemaField {
 	return schema.schema.Columns()
+}
+
+type baseSchemaField struct {
+	name string
+}
+
+func NewSchemaField(name string) SchemaField {
+	return &baseSchemaField{
+		name,
+	}
+}
+
+func (field *baseSchemaField) String() string {
+	return field.Name()
+}
+
+// Name returns the name of the field
+func (field *baseSchemaField) Name() string {
+	return field.name
+}
+
+// QualifiedName returns the field name together with the Schema table name.
+func (field *baseSchemaField) QualifiedName(schema Schema) string {
+	return schema.Table() + "." + field.Name()
 }

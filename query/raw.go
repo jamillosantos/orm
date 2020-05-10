@@ -9,6 +9,10 @@ type rawSql struct {
 	args []interface{}
 }
 
+func Raw(sql string, args ...interface{}) sq.Sqlizer {
+	return &rawSql{sql, args}
+}
+
 func (r *rawSql) ToSql() (string, []interface{}, error) {
 	return r.sql, r.args, nil
 }

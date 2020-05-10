@@ -2,27 +2,24 @@ package cmd
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"go/build"
 	"go/format"
 	"go/scanner"
 	"io"
 	"os"
+	"path"
+	"path/filepath"
 
 	"github.com/setare/orm/internal/document"
 	"github.com/setare/orm/internal/generator"
-	"github.com/setare/orm/internal/parser"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
 
-var (
-	modelsFileName  string
-	modelsDirectory string
-	outputDirectory string
-)
-
 func processGenerator(g generator.Generator, ctx generator.Context, output io.Writer) error {
+	fmt.Println("Generating ", g.Name())
 	buff := bytes.NewBuffer(nil)
 	if err := g.Generate(buff, &ctx); err != nil {
 		return err
@@ -58,8 +55,72 @@ func processGenerator(g generator.Generator, ctx generator.Context, output io.Wr
 	} else if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 	}
-	output.Write(data)
-	return nil
+	_, err = output.Write(data)
+	return err
+}
+
+func resolvePath(output *document.Output, fName string) (string, error) {
+	if path.IsAbs(fName) {
+		return fName, nil
+	}
+
+	if output.Directory != "" && path.IsAbs(output.Directory) {
+		fName = path.Join(output.Directory, fName)
+	} else {
+		cwd, err := os.Getwd()
+		if err != nil {
+			return "", err
+		}
+
+		fName = path.Join(cwd, fName)
+	}
+	if err := os.MkdirAll(path.Base(fName), os.ModePerm); err != nil {
+		return "", err
+	}
+	return filepath.Abs(fName)
+}
+
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
+}
+
+func prepareFile(fName string) (*os.File, error) {
+	_, err := os.Stat(fName)
+	if os.IsNotExist(err) {
+		return os.Create(fName)
+	} else if err != nil {
+		return nil, err
+	}
+	fmt.Println(">>>", fName)
+	return os.Create(fName)
+}
+
+var pkgCache = make(map[string]*build.Package, 0)
+
+func parsePackage(output *document.Output, fName string) (*build.Package, error) {
+	f, err := resolvePath(output, fName)
+	if err != nil {
+		return nil, err
+	}
+	dir := path.Dir(f)
+
+	// Check if there is any package in the cache.
+	if pkg, ok := pkgCache[dir]; ok {
+		return pkg, nil
+	}
+
+	pkg, err := build.Default.ImportDir(dir, build.ImportComment)
+	if err != nil {
+		return nil, err
+	}
+
+	pkgCache[dir] = pkg // Add the package to the cache.
+
+	return pkg, nil
 }
 
 // rootCmd represents the base command when called without any subcommands
@@ -73,46 +134,10 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		if outputDirectory == "" {
-			cwd, err := os.Getwd()
-			if err != nil {
-				panic(err)
-			}
-			outputDirectory = cwd
-		}
-
-		bctx := build.Default
-
-		var (
-			modelsPkg *build.Package
-			outputPkg *build.Package
-			err       error
-		)
-
-		outputPkg, err = bctx.ImportDir(outputDirectory, build.ImportComment)
+		workingDirectory, err := os.Getwd()
 		if err != nil {
 			panic(err)
 		}
-		if modelsDirectory == "" {
-			modelsDirectory = outputDirectory
-			modelsPkg = outputPkg
-		} else {
-			modelsPkg, err = bctx.ImportDir(modelsDirectory, build.ImportComment)
-			if err != nil {
-				panic(err)
-			}
-		}
-
-		fmt.Println("Output package:")
-		fmt.Println("  ", outputPkg.Name)
-		fmt.Println("  ", outputPkg.Dir)
-		fmt.Println("  ", outputPkg.ImportPath)
-		fmt.Println("")
-		fmt.Println("models package:")
-		fmt.Println("  ", modelsPkg.Name)
-		fmt.Println("  ", modelsPkg.Dir)
-		fmt.Println("  ", modelsPkg.ImportPath)
 
 		f, err := os.Open("samples/library/library.yaml")
 		if err != nil {
@@ -127,58 +152,138 @@ to quickly create a Cobra application.`,
 			panic(err)
 		}
 
-		parser.Parse(doc)
+		// parser.Parse(doc)
+
+		defaultPkg, err := build.Default.Import(doc.Output.Package, workingDirectory, build.ImportComment)
+		if err != nil {
+			panic(err)
+		}
+
+		modelPkg, err := parsePackage(&doc.Output, doc.Output.Model)
+		if err != nil {
+			panic(err)
+		}
+
+		if workingDirectory != modelPkg.Dir[:len(workingDirectory)] {
+			panic(errors.New("the models package should be inside the working directory"))
+		}
+
+		absOutputDir := path.Join(defaultPkg.Root, doc.Output.Directory)
+
+		outputPkg, err := build.Default.ImportDir(absOutputDir, build.ImportComment)
+		if err != nil {
+			panic(err)
+		}
+		if workingDirectory != outputPkg.Dir[:len(workingDirectory)] {
+			panic(errors.New("the output package should be inside the working directory"))
+		}
 
 		gctx := generator.Context{
 			ModelsPackage: document.Package{
-				Name:       modelsPkg.Name,
-				ImportPath: "???",
-				Directory:  modelsPkg.Dir,
+				Name:       modelPkg.Name,
+				Directory:  modelPkg.Dir,
+				ImportPath: defaultPkg.ImportPath + "/" + path.Dir(doc.Output.Model),
+			},
+			OutputPackage: document.Package{
+				Name:       outputPkg.Name,
+				Directory:  outputPkg.Dir,
+				ImportPath: defaultPkg.ImportPath + "/" + doc.Output.Directory,
 			},
 			Document: doc,
 		}
 
-		/*
-			modelsFile, err := os.Open(path.Join(modelsDirectory, modelsFileName))
+		fmt.Println("default package:")
+		fmt.Println("  ", defaultPkg.Name)
+		fmt.Println("  ", defaultPkg.Dir)
+		fmt.Println("  ", defaultPkg.ImportPath)
+		fmt.Println()
+
+		fmt.Println("models package:")
+		fmt.Println("  ", gctx.ModelsPackage.Name)
+		fmt.Println("  ", gctx.ModelsPackage.Directory)
+		fmt.Println("  ", gctx.ModelsPackage.ImportPath)
+		fmt.Println()
+
+		fmt.Println("output package:")
+		fmt.Println("  ", gctx.OutputPackage.Name)
+		fmt.Println("  ", gctx.OutputPackage.Directory)
+		fmt.Println("  ", gctx.OutputPackage.ImportPath)
+		fmt.Println()
+
+		if doc.Generators.Models {
+			f, err := prepareFile(path.Join(defaultPkg.Root, doc.Output.Model))
 			if err != nil {
 				panic(err)
 			}
-		*/
+			defer f.Close()
 
-		fmt.Println("Models")
-		fmt.Println("======")
-		var modelGenerator generator.ModelGenerator
-		processGenerator(&modelGenerator, gctx, os.Stdout)
+			err = processGenerator(&generator.ModelGenerator{}, gctx, f)
+			if err != nil {
+				panic(err)
+			}
+		}
 
-		fmt.Println()
-		fmt.Println("Schema")
-		fmt.Println("======")
-		var schemaGenerator generator.SchemaGenerator
-		processGenerator(&schemaGenerator, gctx, os.Stdout)
-		
-		fmt.Println()
-		fmt.Println("Connections")
-		fmt.Println("===========")
-		var connectionsGenerator generator.ConnectionsGenerator
-		processGenerator(&connectionsGenerator, gctx, os.Stdout)
-		
-		fmt.Println()
-		fmt.Println("ResultSet")
-		fmt.Println("=========")
-		var resultSetGenerator generator.ResultSetGenerator
-		processGenerator(&resultSetGenerator, gctx, os.Stdout)
-		
-		fmt.Println()
-		fmt.Println("Store")
-		fmt.Println("=========")
-		var storeGenerator generator.StoresGenerator
-		processGenerator(&storeGenerator, gctx, os.Stdout)
+		if !(doc.Generators.Schema ||
+			doc.Generators.Connections ||
+			doc.Generators.ResultSets ||
+			doc.Generators.Stores || doc.Generators.Queries) {
+			return
+		}
 
-		fmt.Println()
-		fmt.Println("Queries")
-		fmt.Println("=======")
-		var queriesGenerator generator.QueriesGenerator
-		processGenerator(&queriesGenerator, gctx, os.Stdout)
+		if doc.Generators.Schema {
+			f, err := prepareFile(path.Join(gctx.OutputPackage.Directory, doc.Output.Schema))
+			if err != nil {
+				panic(err)
+			}
+			defer f.Close()
+
+			var schemaGenerator generator.SchemaGenerator
+			processGenerator(&schemaGenerator, gctx, f)
+		}
+
+		if doc.Generators.Connections {
+			f, err := prepareFile(path.Join(gctx.OutputPackage.Directory, doc.Output.Connection))
+			if err != nil {
+				panic(err)
+			}
+			defer f.Close()
+
+			var connectionsGenerator generator.ConnectionsGenerator
+			processGenerator(&connectionsGenerator, gctx, f)
+		}
+
+		if doc.Generators.ResultSets {
+			f, err := prepareFile(path.Join(gctx.OutputPackage.Directory, doc.Output.ResultSet))
+			if err != nil {
+				panic(err)
+			}
+			defer f.Close()
+
+			var resultSetGenerator generator.ResultSetGenerator
+			processGenerator(&resultSetGenerator, gctx, f)
+		}
+
+		if doc.Generators.Stores {
+			f, err := prepareFile(path.Join(gctx.OutputPackage.Directory, doc.Output.Store))
+			if err != nil {
+				panic(err)
+			}
+			defer f.Close()
+
+			var storeGenerator generator.StoresGenerator
+			processGenerator(&storeGenerator, gctx, f)
+		}
+
+		if doc.Generators.Queries {
+			f, err := prepareFile(path.Join(gctx.OutputPackage.Directory, doc.Output.Query))
+			if err != nil {
+				panic(err)
+			}
+			defer f.Close()
+
+			var queriesGenerator generator.QueriesGenerator
+			processGenerator(&queriesGenerator, gctx, f)
+		}
 	},
 }
 
@@ -191,10 +296,4 @@ func Execute() {
 }
 
 func init() {
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	rootCmd.Flags().StringVar(&modelsFileName, "models-file", "models.go", "the file name for the models")
-	rootCmd.Flags().StringVar(&modelsDirectory, "models-dir", "", "the models directory of the models source code")
-	rootCmd.Flags().StringVar(&outputDirectory, "output-dir", "", "the output directory of the queries, stores and connections source code")
 }

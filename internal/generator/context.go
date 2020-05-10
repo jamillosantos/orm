@@ -4,5 +4,6 @@ import "github.com/setare/orm/internal/document"
 
 type Context struct {
 	ModelsPackage document.Package
+	OutputPackage document.Package
 	Document      *document.Document
 }
