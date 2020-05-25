@@ -3,7 +3,7 @@ package generator
 import (
 	"io"
 
-	"github.com/setare/orm/internal/templates"
+	"github.com/setare/orm/gen/templates"
 )
 
 type ResultSetGenerator struct {

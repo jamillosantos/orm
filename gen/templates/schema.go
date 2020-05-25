@@ -1,6 +1,6 @@
 package templates
 
-import "github.com/setare/orm/internal/document"
+import "github.com/setare/orm/gen/document"
 
 type SchemaInput struct {
 	Package *document.Package
