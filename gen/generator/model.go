@@ -14,6 +14,6 @@ func (*ModelGenerator) Name() string {
 }
 
 func (*ModelGenerator) Generate(writer io.Writer, gctx *Context) error {
-	templates.WriteRecords(writer, gctx.ModelsPackage, gctx.Document.Records)
+	templates.WriteRecords(writer, gctx.ModelsPackage, gctx.Document.Records, gctx.Document.Imports)
 	return nil
 }

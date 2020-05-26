@@ -1,6 +1,9 @@
 package orm
 
 import (
+	"bytes"
+	"errors"
+
 	sq "github.com/Masterminds/squirrel"
 )
 
@@ -67,6 +70,35 @@ func newJoin(joinType JoinType, schema Schema, conditions ...sq.Sqlizer) *join {
 	}
 }
 
+func (j *join) ToSql() (string, []interface{}, error) {
+	buf := bytes.NewBuffer(nil)
+	a := j.schema.Alias()
+	buf.WriteString(j.schema.Table())
+	if a != "" {
+		buf.WriteString(" ")
+		buf.WriteString(j.schema.Alias())
+	}
+	if len(j.conditions) > 0 {
+		buf.WriteString(" ON ")
+		args := make([]interface{}, 0, len(j.conditions))
+		for i, condition := range j.conditions {
+			if i > 0 {
+				buf.WriteString(" AND ")
+			}
+			s, as, err := condition.ToSql()
+			if err != nil {
+				return "", nil, err
+			}
+			if len(as) > 0 {
+				args = append(args, as...)
+			}
+			buf.WriteString(s)
+		}
+		return buf.String(), args, nil
+	}
+	return buf.String(), nil, nil
+}
+
 type baseQuery struct {
 	_dirty          bool
 	conn            Connection
@@ -91,6 +123,10 @@ func NewQuery(schema Schema) Query {
 func (query *baseQuery) Select(fields ...SchemaField) {
 	query.selectFields = fields
 	query._dirty = true
+}
+
+func (query *baseQuery) GetSelect() []SchemaField {
+	return query.selectFields
 }
 
 func (query *baseQuery) AddSelect(fields ...SchemaField) {
@@ -187,30 +223,31 @@ func (query *baseQuery) ToSql() (string, []interface{}, error) {
 		selectFields = query.selectFieldsStr
 	}
 	builder := query.conn.Builder().Select(selectFields...).From(query.from.Alias())
-	for _, join := query.joins {
+	for _, join := range query.joins {
 		sqlJoin, argsJoin, err := join.ToSql()
 		if err != nil {
 			return "", nil, err
 		}
-		var f func (join string, rest ...interface{}) sq.SelectBuilder
+		var f func(join string, rest ...interface{}) sq.SelectBuilder
 		switch join.joinType {
 		case JoinNone:
 			f = builder.Join
 		case InnerJoin:
-			f = func(p string, a interface{}...) sq.SelectBuilder {
-				return builder.JoinClause("INNER JOIN " + p, args)
+			f = func(p string, args ...interface{}) sq.SelectBuilder {
+				return builder.JoinClause("INNER JOIN "+p, args)
 			}
 		case LeftJoin:
 			f = builder.LeftJoin
 		case RightJoin:
 			f = builder.RightJoin
 		case FullJoin:
-			f = func(p string, a interface{}...) sq.SelectBuilder {
-				return builder.JoinClause("FULL JOIN " + p, args)
+			f = func(p string, args ...interface{}) sq.SelectBuilder {
+				return builder.JoinClause("FULL JOIN "+p, args)
 			}
 		default:
 			return "", nil, ErrInvalidJoinType
 		}
 		builder = f(sqlJoin, argsJoin...)
 	}
+	return builder.ToSql()
 }

@@ -59,7 +59,7 @@ func (store *{%s record.Store.Type%}) InsertContext(ctx context.Context, record 
 		return err
 	}
 {% if record.FieldAutoInc == nil %}
-	_, err := store.conn.ExecContext(ctx, sql, args...)
+	_, err = store.conn.ExecContext(ctx, sql, args...)
 	return err
 {% else %}
 	var id {%s record.FieldAutoInc.Type %}

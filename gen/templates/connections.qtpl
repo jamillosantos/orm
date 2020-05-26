@@ -16,6 +16,11 @@ func (conn *connection) {%s record.Query.Type %}() (*{%s record.Query.Type %}, e
 	return New{%s record.Query.Type %}(conn)
 }
 {% endfor %}
+{% for _, record := range input.Records %}
+func (conn *connection) {%s record.Store.Type %}() *{%s record.Store.Type %} {
+	return New{%s record.Store.Type %}(conn)
+}
+{% endfor %}
 
 var DefaultConnection connection
 

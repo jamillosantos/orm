@@ -14,7 +14,7 @@ type Document struct {
 	Version    string     `yaml:"version"`
 	Output     Output     `yaml:"output"`
 	Generators Generators `yaml:"generators"`
-	Imports    []string   `yaml:"imports"`
+	Imports    []*Import  `yaml:"imports"`
 	Records    []*Record  `yaml:"records"`
 }
 
@@ -29,10 +29,14 @@ func (doc *Document) UnmarshalYAML(value *yaml.Node) error {
 			i++
 			doc.Version = value.Content[i].Value
 		case "imports":
-			doc.Imports = make([]string, 0)
 			i++
-			for _, imp := range value.Content[i].Content {
-				doc.Imports = append(doc.Imports, imp.Value)
+			doc.Imports = make([]*Import, len(value.Content[i].Content))
+			for i := 0; i < len(doc.Imports); i++ {
+				doc.Imports[i] = &Import{}
+			}
+			err := value.Content[i].Decode(&doc.Imports)
+			if err != nil {
+				return err
 			}
 		case "output":
 			i++
