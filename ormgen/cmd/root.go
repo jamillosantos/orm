@@ -18,6 +18,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+var (
+	fileFlag string
+)
+
 func processGenerator(g generator.Generator, ctx generator.Context, output io.Writer) error {
 	fmt.Println("Generating ", g.Name())
 	buff := bytes.NewBuffer(nil)
@@ -125,7 +129,7 @@ func parsePackage(output *document.Output, fName string) (*build.Package, error)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "ormgen",
+	Use:   "ormgen <models YAML>",
 	Short: "ormgen is the tool for generating the go code from the YAML description of the models",
 	Long: `A longer description that spans multiple lines and likely contains
 examples and usage of using your application. For example:
@@ -139,7 +143,7 @@ to quickly create a Cobra application.`,
 			panic(err)
 		}
 
-		f, err := os.Open("samples/library/library.yaml")
+		f, err := os.Open(fileFlag)
 		if err != nil {
 			panic(err)
 		}
@@ -296,4 +300,5 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.PersistentFlags().StringVarP(&fileFlag, "file", "f", "models.yaml", "YAML file with the models configuration.")
 }
