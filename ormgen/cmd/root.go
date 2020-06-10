@@ -19,7 +19,8 @@ import (
 )
 
 var (
-	fileFlag string
+	fileFlag    string
+	verboseFlag bool
 )
 
 func processGenerator(g generator.Generator, ctx generator.Context, output io.Writer) error {
@@ -117,6 +118,8 @@ func parsePackage(output *document.Output, fName string) (*build.Package, error)
 		return pkg, nil
 	}
 
+	verbose("importing from ", dir)
+
 	pkg, err := build.Default.ImportDir(dir, build.ImportComment)
 	if err != nil {
 		return nil, err
@@ -125,6 +128,21 @@ func parsePackage(output *document.Output, fName string) (*build.Package, error)
 	pkgCache[dir] = pkg // Add the package to the cache.
 
 	return pkg, nil
+}
+
+func verbose(args ...interface{}) {
+	if !verboseFlag {
+		return
+	}
+	fmt.Println(args...)
+}
+
+func verbosef(format string, args ...interface{}) {
+	if !verboseFlag {
+		return
+	}
+	fmt.Printf(format, args...)
+	fmt.Println()
 }
 
 // rootCmd represents the base command when called without any subcommands
@@ -143,6 +161,9 @@ to quickly create a Cobra application.`,
 			panic(err)
 		}
 
+		verbose("Working Dir: %s", workingDirectory)
+		verbose("File: %s", fileFlag)
+
 		f, err := os.Open(fileFlag)
 		if err != nil {
 			panic(err)
@@ -156,8 +177,7 @@ to quickly create a Cobra application.`,
 			panic(err)
 		}
 
-		// parser.Parse(doc)
-
+		verbose("importing ", doc.Output.Package, " from ", workingDirectory)
 		defaultPkg, err := build.Default.Import(doc.Output.Package, workingDirectory, build.ImportComment)
 		if err != nil {
 			panic(err)
@@ -301,4 +321,5 @@ func Execute() {
 
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&fileFlag, "file", "f", "models.yaml", "YAML file with the models configuration.")
+	rootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Enable verbose mode.")
 }
