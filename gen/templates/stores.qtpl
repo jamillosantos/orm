@@ -35,22 +35,24 @@ func (store *{%s record.Store.Type%}) InsertContext(ctx context.Context, record 
 		fields = {%s record.Schema.InternalRef %}Fields
 	}
 
-	if biH, ok := record.(orm.HookBeforeInsert); ok {
+	var recordItf interface{} = record
+
+	if biH, ok := recordItf.(orm.HookBeforeInsert); ok {
 		err := biH.BeforeInsert(ctx, fields...)
 		if err != nil {
 			return err
 		}
 	}
 
-	if bsH, ok := record.(orm.HookBeforeSave); ok {
+	if bsH, ok := recordItf.(orm.HookBeforeSave); ok {
 		err := bsH.BeforeSave(ctx, fields...)
 		if err != nil {
 			return err
 		}
 	}
 
-	aiH, aiHOk := record.(orm.HookAfterInsert)
-	asH, asHOk := record.(orm.HookAfterSave)
+	aiH, aiHOk := recordItf.(orm.HookAfterInsert)
+	asH, asHOk := recordItf.(orm.HookAfterSave)
 
 	columnNames := make([]string, len(fields))
 	columnValues := make([]interface{}, len(fields))
@@ -131,22 +133,24 @@ func (store *{%s record.Store.Type%}) UpdateContext(ctx context.Context, record 
 		fields = {%s record.Schema.InternalRef %}Fields
 	}
 
-	if buH, ok := record.(orm.HookBeforeUpdate); ok {
-		err := buH.BeforeInsert(ctx, fields...)
+	var recordItf interface{} = record
+
+	if buH, ok := recordItf.(orm.HookBeforeUpdate); ok {
+		err := buH.BeforeUpdate(ctx, fields...)
 		if err != nil {
-			return err
+			return 0, err
 		}
 	}
 	
-	if bsH, ok := record.(orm.HookBeforeSave); ok {
+	if bsH, ok := recordItf.(orm.HookBeforeSave); ok {
 		err := bsH.BeforeSave(ctx, fields...)
 		if err != nil {
-			return err
+			return 0, err
 		}
 	}
 
-	auH, auHOk := record.(orm.HookAfterUpdate)
-	asH, asHOk := record.(orm.HookAfterSave)
+	auH, auHOk := recordItf.(orm.HookAfterUpdate)
+	asH, asHOk := recordItf.(orm.HookAfterSave)
 
 	builder := store.conn.Builder().Update({%s record.Schema.InternalRef %}.Table())
 	var err error
@@ -205,10 +209,12 @@ func (store *{%s record.Store.Type%}) DeleteContext(ctx context.Context, records
 
 {% if len(record.PrimaryKey) == 1 %}
 		for i, record := range records {
-			if bdH, bdHOk := record.(orm.HookBeforeDelete); bdHOk {
+			var recordItf interface{} = record
+
+			if bdH, bdHOk := recordItf.(orm.HookBeforeDelete); bdHOk {
 				err := bdH.BeforeDelete(ctx)
 				if err != nil {
-					return err
+					return 0, err
 				}
 			}
 			ids[i] = record.{%s record.PrimaryKey[0].GoName %}
@@ -220,10 +226,10 @@ func (store *{%s record.Store.Type%}) DeleteContext(ctx context.Context, records
 		field{%d i %} := query.Raw("{%j field.Name %}")
 {%- endfor -%}
 		for i, record := range records {
-			if bdH, bdHOk := record.(orm.HookBeforeDelete); bdHOk {
+			if bdH, bdHOk := recordItf.(orm.HookBeforeDelete); bdHOk {
 				err := bdH.BeforeDelete(ctx)
 				if err != nil {
-					return err
+					return 0, err
 				}
 			}
 
@@ -236,10 +242,11 @@ func (store *{%s record.Store.Type%}) DeleteContext(ctx context.Context, records
 		builder = builder.Where(ors)
 {% endif %}
 	} else if len(records) == 1 {
-		if bdH, bdHOk := records[0].(orm.HookBeforeDelete); bdHOk {
+		var recordItf interface{} = records[0]
+		if bdH, bdHOk := recordItf.(orm.HookBeforeDelete); bdHOk {
 			err := bdH.BeforeDelete(ctx)
 			if err != nil {
-				return err
+				return 0, err
 			}
 		}
 
@@ -258,7 +265,8 @@ func (store *{%s record.Store.Type%}) DeleteContext(ctx context.Context, records
 	r, err := builder.ExecContext(ctx)
 	if err != nil {
 		for _, record := range records {
-			if adH, adHOk := records[0].(orm.HookAfterDelete); adHOk {
+			var recordItf interface{} = record
+			if adH, adHOk := recordItf.(orm.HookAfterDelete); adHOk {
 				adH.AfterDelete(ctx, err)
 			}
 		}

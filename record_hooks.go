@@ -7,7 +7,7 @@ type HookBeforeInsert interface {
 }
 
 type HookAfterInsert interface {
-	AfterInsert(err error, ctx context.Context, fields ...SchemaField)
+	AfterInsert(ctx context.Context, err error, fields ...SchemaField)
 }
 
 type HookBeforeUpdate interface {
@@ -23,7 +23,7 @@ type HookBeforeSave interface {
 }
 
 type HookAfterSave interface {
-	AfterSave(err error, ctx context.Context, fields ...SchemaField)
+	AfterSave(ctx context.Context, err error, fields ...SchemaField)
 }
 
 type HookBeforeDelete interface {
@@ -31,5 +31,5 @@ type HookBeforeDelete interface {
 }
 
 type HookAfterDelete interface {
-	AfterDelete(ctx context.Context)
+	AfterDelete(ctx context.Context, err error)
 }

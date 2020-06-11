@@ -112,22 +112,24 @@ func (store *`)
 		qw422016.N().S(`Fields
 	}
 
-	if biH, ok := record.(orm.HookBeforeInsert); ok {
+	var recordItf interface{} = record
+
+	if biH, ok := recordItf.(orm.HookBeforeInsert); ok {
 		err := biH.BeforeInsert(ctx, fields...)
 		if err != nil {
 			return err
 		}
 	}
 
-	if bsH, ok := record.(orm.HookBeforeSave); ok {
+	if bsH, ok := recordItf.(orm.HookBeforeSave); ok {
 		err := bsH.BeforeSave(ctx, fields...)
 		if err != nil {
 			return err
 		}
 	}
 
-	aiH, aiHOk := record.(orm.HookAfterInsert)
-	asH, asHOk := record.(orm.HookAfterSave)
+	aiH, aiHOk := recordItf.(orm.HookAfterInsert)
+	asH, asHOk := recordItf.(orm.HookAfterSave)
 
 	columnNames := make([]string, len(fields))
 	columnValues := make([]interface{}, len(fields))
@@ -135,7 +137,7 @@ func (store *`)
 	for i, field := range fields {
 		var fieldAddr interface{}
 		`)
-//line stores.qtpl:60
+//line stores.qtpl:62
 		StreamColumnAddresses(qw422016, &ColumnAddressesInput{
 			FieldName:  "field.Name()",
 			TargetName: "fieldAddr",
@@ -143,7 +145,7 @@ func (store *`)
 			ErrName:    "err",
 			Record:     record,
 		})
-//line stores.qtpl:66
+//line stores.qtpl:68
 		qw422016.N().S(`
 		if err != nil {
 			if aiHOk {
@@ -158,21 +160,21 @@ func (store *`)
 		columnValues[i] = fieldAddr
 	}
 	builder := store.conn.Builder().Insert(`)
-//line stores.qtpl:79
+//line stores.qtpl:81
 		qw422016.E().S(record.Schema.InternalRef)
-//line stores.qtpl:79
+//line stores.qtpl:81
 		qw422016.N().S(`.Table()).Columns(columnNames...).Values(columnValues...)`)
-//line stores.qtpl:79
+//line stores.qtpl:81
 		if record.FieldAutoInc != nil {
-//line stores.qtpl:79
+//line stores.qtpl:81
 			qw422016.N().S(`.Suffix("RETURNING `)
-//line stores.qtpl:79
+//line stores.qtpl:81
 			qw422016.E().S(record.FieldAutoInc.Name)
-//line stores.qtpl:79
+//line stores.qtpl:81
 			qw422016.N().S(`")`)
-//line stores.qtpl:79
+//line stores.qtpl:81
 		}
-//line stores.qtpl:79
+//line stores.qtpl:81
 		qw422016.N().S(`
 
 	sql, args, err := builder.ToSql()
@@ -186,9 +188,9 @@ func (store *`)
 		return err
 	}
 `)
-//line stores.qtpl:91
+//line stores.qtpl:93
 		if record.FieldAutoInc == nil {
-//line stores.qtpl:91
+//line stores.qtpl:93
 			qw422016.N().S(`
 	_, err = store.conn.ExecContext(ctx, sql, args...)
 
@@ -201,14 +203,14 @@ func (store *`)
 
 	return err
 `)
-//line stores.qtpl:102
+//line stores.qtpl:104
 		} else {
-//line stores.qtpl:102
+//line stores.qtpl:104
 			qw422016.N().S(`
 	var id `)
-//line stores.qtpl:103
+//line stores.qtpl:105
 			qw422016.E().S(record.FieldAutoInc.Type)
-//line stores.qtpl:103
+//line stores.qtpl:105
 			qw422016.N().S(`
 	err = store.conn.QueryRowContext(ctx, sql, args...).Scan(&id)
 	if err != nil {
@@ -221,9 +223,9 @@ func (store *`)
 		return err
 	}
 	record.`)
-//line stores.qtpl:114
+//line stores.qtpl:116
 			qw422016.E().S(record.FieldAutoInc.GoName)
-//line stores.qtpl:114
+//line stores.qtpl:116
 			qw422016.N().S(` = id
 	if aiHOk {
 		aiH.AfterInsert(ctx, nil, fields...)
@@ -233,68 +235,70 @@ func (store *`)
 	}
 	return nil
 `)
-//line stores.qtpl:122
+//line stores.qtpl:124
 		}
-//line stores.qtpl:122
+//line stores.qtpl:124
 		qw422016.N().S(`
 }
 
 func (store *`)
-//line stores.qtpl:125
+//line stores.qtpl:127
 		qw422016.E().S(record.Store.Type)
-//line stores.qtpl:125
+//line stores.qtpl:127
 		qw422016.N().S(`) Update(record *`)
-//line stores.qtpl:125
+//line stores.qtpl:127
 		qw422016.E().S(input.ModelsPackage.Ref(input.Package, record.Name))
-//line stores.qtpl:125
+//line stores.qtpl:127
 		qw422016.N().S(`, fields ...orm.SchemaField) (int64, error) {
 	return store.UpdateContext(context.Background(), record, fields...)
 }
 
 func (store *`)
-//line stores.qtpl:129
+//line stores.qtpl:131
 		qw422016.E().S(record.Store.Type)
-//line stores.qtpl:129
+//line stores.qtpl:131
 		qw422016.N().S(`) UpdateContext(ctx context.Context, record *`)
-//line stores.qtpl:129
+//line stores.qtpl:131
 		qw422016.E().S(input.ModelsPackage.Ref(input.Package, record.Name))
-//line stores.qtpl:129
+//line stores.qtpl:131
 		qw422016.N().S(`, fields ...orm.SchemaField) (int64, error) {
 	if len(fields) == 0 {
 		fields = `)
-//line stores.qtpl:131
+//line stores.qtpl:133
 		qw422016.E().S(record.Schema.InternalRef)
-//line stores.qtpl:131
+//line stores.qtpl:133
 		qw422016.N().S(`Fields
 	}
 
-	if buH, ok := record.(orm.HookBeforeUpdate); ok {
-		err := buH.BeforeInsert(ctx, fields...)
+	var recordItf interface{} = record
+
+	if buH, ok := recordItf.(orm.HookBeforeUpdate); ok {
+		err := buH.BeforeUpdate(ctx, fields...)
 		if err != nil {
-			return err
+			return 0, err
 		}
 	}
 	
-	if bsH, ok := record.(orm.HookBeforeSave); ok {
+	if bsH, ok := recordItf.(orm.HookBeforeSave); ok {
 		err := bsH.BeforeSave(ctx, fields...)
 		if err != nil {
-			return err
+			return 0, err
 		}
 	}
 
-	auH, auHOk := record.(orm.HookAfterUpdate)
-	asH, asHOk := record.(orm.HookAfterSave)
+	auH, auHOk := recordItf.(orm.HookAfterUpdate)
+	asH, asHOk := recordItf.(orm.HookAfterSave)
 
 	builder := store.conn.Builder().Update(`)
-//line stores.qtpl:151
+//line stores.qtpl:155
 		qw422016.E().S(record.Schema.InternalRef)
-//line stores.qtpl:151
+//line stores.qtpl:155
 		qw422016.N().S(`.Table())
 	var err error
 	for _, field := range fields {
 		var fieldAddr interface{}
 		`)
-//line stores.qtpl:155
+//line stores.qtpl:159
 		StreamColumnAddresses(qw422016, &ColumnAddressesInput{
 			FieldName:  "field.Name()",
 			TargetName: "fieldAddr",
@@ -302,7 +306,7 @@ func (store *`)
 			ErrName:    "err",
 			Record:     record,
 		})
-//line stores.qtpl:161
+//line stores.qtpl:165
 		qw422016.N().S(`
 		if err != nil {
 			if auHOk {
@@ -316,23 +320,23 @@ func (store *`)
 		builder = builder.Set(field.String(), fieldAddr)
 	}
 `)
-//line stores.qtpl:173
+//line stores.qtpl:177
 		for _, field := range record.PrimaryKey {
-//line stores.qtpl:173
+//line stores.qtpl:177
 			qw422016.N().S(`
 	builder.Where(query.Eq(query.Raw("`)
-//line stores.qtpl:174
+//line stores.qtpl:178
 			qw422016.E().J(field.Name)
-//line stores.qtpl:174
+//line stores.qtpl:178
 			qw422016.N().S(`"), record.`)
-//line stores.qtpl:174
+//line stores.qtpl:178
 			qw422016.E().S(field.GoName)
-//line stores.qtpl:174
+//line stores.qtpl:178
 			qw422016.N().S(`))
 `)
-//line stores.qtpl:175
+//line stores.qtpl:179
 		}
-//line stores.qtpl:175
+//line stores.qtpl:179
 		qw422016.N().S(`
 	r, err := builder.ExecContext(ctx)
 	if err != nil {
@@ -355,165 +359,168 @@ func (store *`)
 }
 
 func (store *`)
-//line stores.qtpl:196
+//line stores.qtpl:200
 		qw422016.E().S(record.Store.Type)
-//line stores.qtpl:196
+//line stores.qtpl:200
 		qw422016.N().S(`) Delete(records ...*`)
-//line stores.qtpl:196
+//line stores.qtpl:200
 		qw422016.E().S(input.ModelsPackage.Ref(input.Package, record.Name))
-//line stores.qtpl:196
+//line stores.qtpl:200
 		qw422016.N().S(`) (int64, error) {
 	return store.DeleteContext(context.Background(), records...)
 }
 
 func (store *`)
-//line stores.qtpl:200
+//line stores.qtpl:204
 		qw422016.E().S(record.Store.Type)
-//line stores.qtpl:200
+//line stores.qtpl:204
 		qw422016.N().S(`) DeleteContext(ctx context.Context, records ...*`)
-//line stores.qtpl:200
+//line stores.qtpl:204
 		qw422016.E().S(input.ModelsPackage.Ref(input.Package, record.Name))
-//line stores.qtpl:200
+//line stores.qtpl:204
 		qw422016.N().S(`) (int64, error) {
 	builder := store.conn.Builder().Delete(`)
-//line stores.qtpl:201
+//line stores.qtpl:205
 		qw422016.E().S(record.Schema.InternalRef)
-//line stores.qtpl:201
+//line stores.qtpl:205
 		qw422016.N().S(`.Table())
 
 	if len(records) == 0 {
 		ids := make([]interface{}, len(records) * `)
-//line stores.qtpl:204
+//line stores.qtpl:208
 		qw422016.N().D(len(record.PrimaryKey))
-//line stores.qtpl:204
+//line stores.qtpl:208
 		qw422016.N().S(`)
 
 `)
-//line stores.qtpl:206
+//line stores.qtpl:210
 		if len(record.PrimaryKey) == 1 {
-//line stores.qtpl:206
+//line stores.qtpl:210
 			qw422016.N().S(`
 		for i, record := range records {
-			if bdH, bdHOk := record.(orm.HookBeforeDelete); bdHOk {
+			var recordItf interface{} = record
+
+			if bdH, bdHOk := recordItf.(orm.HookBeforeDelete); bdHOk {
 				err := bdH.BeforeDelete(ctx)
 				if err != nil {
-					return err
+					return 0, err
 				}
 			}
 			ids[i] = record.`)
-//line stores.qtpl:214
+//line stores.qtpl:220
 			qw422016.E().S(record.PrimaryKey[0].GoName)
-//line stores.qtpl:214
+//line stores.qtpl:220
 			qw422016.N().S(`
 		}
 		builder = builder.Where(query.In(query.Raw("`)
-//line stores.qtpl:216
+//line stores.qtpl:222
 			qw422016.E().J(record.PrimaryKey[0].Name)
-//line stores.qtpl:216
+//line stores.qtpl:222
 			qw422016.N().S(`"), ids))
 `)
-//line stores.qtpl:217
+//line stores.qtpl:223
 		} else {
-//line stores.qtpl:217
+//line stores.qtpl:223
 			qw422016.N().S(`
 		ors := make([]sq.Sqlizer, 0, len(reocrds))
 `)
-//line stores.qtpl:219
+//line stores.qtpl:225
 			for i, field := range record.PrimaryKey {
-//line stores.qtpl:219
+//line stores.qtpl:225
 				qw422016.N().S(`		field`)
-//line stores.qtpl:220
+//line stores.qtpl:226
 				qw422016.N().D(i)
-//line stores.qtpl:220
+//line stores.qtpl:226
 				qw422016.N().S(` := query.Raw("`)
-//line stores.qtpl:220
+//line stores.qtpl:226
 				qw422016.E().J(field.Name)
-//line stores.qtpl:220
+//line stores.qtpl:226
 				qw422016.N().S(`")
 `)
-//line stores.qtpl:221
+//line stores.qtpl:227
 			}
-//line stores.qtpl:221
+//line stores.qtpl:227
 			qw422016.N().S(`		for i, record := range records {
-			if bdH, bdHOk := record.(orm.HookBeforeDelete); bdHOk {
+			if bdH, bdHOk := recordItf.(orm.HookBeforeDelete); bdHOk {
 				err := bdH.BeforeDelete(ctx)
 				if err != nil {
-					return err
+					return 0, err
 				}
 			}
 
 			ors[i] = query.And(
 `)
-//line stores.qtpl:231
+//line stores.qtpl:237
 			for i, field := range record.PrimaryKey {
-//line stores.qtpl:231
+//line stores.qtpl:237
 				qw422016.N().S(`				query.Eq(field`)
-//line stores.qtpl:232
+//line stores.qtpl:238
 				qw422016.N().D(i)
-//line stores.qtpl:232
+//line stores.qtpl:238
 				qw422016.N().S(`, records[0].`)
-//line stores.qtpl:232
+//line stores.qtpl:238
 				qw422016.E().S(field.GoName)
-//line stores.qtpl:232
+//line stores.qtpl:238
 				qw422016.N().S(`),
 `)
-//line stores.qtpl:233
+//line stores.qtpl:239
 			}
-//line stores.qtpl:233
+//line stores.qtpl:239
 			qw422016.N().S(`			)
 		}
 		builder = builder.Where(ors)
 `)
-//line stores.qtpl:237
+//line stores.qtpl:243
 		}
-//line stores.qtpl:237
+//line stores.qtpl:243
 		qw422016.N().S(`
 	} else if len(records) == 1 {
-		if bdH, bdHOk := records[0].(orm.HookBeforeDelete); bdHOk {
+		var recordItf interface{} = records[0]
+		if bdH, bdHOk := recordItf.(orm.HookBeforeDelete); bdHOk {
 			err := bdH.BeforeDelete(ctx)
 			if err != nil {
-				return err
+				return 0, err
 			}
 		}
 
 `)
-//line stores.qtpl:246
+//line stores.qtpl:253
 		if len(record.PrimaryKey) == 1 {
-//line stores.qtpl:246
+//line stores.qtpl:253
 			qw422016.N().S(`		builder = builder.Where(query.Eq(query.Raw("`)
-//line stores.qtpl:247
+//line stores.qtpl:254
 			qw422016.E().J(record.PrimaryKey[0].Name)
-//line stores.qtpl:247
+//line stores.qtpl:254
 			qw422016.N().S(`"), records[0].`)
-//line stores.qtpl:247
+//line stores.qtpl:254
 			qw422016.E().S(record.PrimaryKey[0].GoName)
-//line stores.qtpl:247
+//line stores.qtpl:254
 			qw422016.N().S(`))
 `)
-//line stores.qtpl:248
+//line stores.qtpl:255
 		} else {
-//line stores.qtpl:248
+//line stores.qtpl:255
 			qw422016.N().S(`
 		builder = builder
 `)
-//line stores.qtpl:250
+//line stores.qtpl:257
 			for _, field := range record.PrimaryKey {
-//line stores.qtpl:250
+//line stores.qtpl:257
 				qw422016.N().S(`	.Where(query.In(query.Raw("`)
-//line stores.qtpl:251
+//line stores.qtpl:258
 				qw422016.E().J(field.Name)
-//line stores.qtpl:251
+//line stores.qtpl:258
 				qw422016.N().S(`"), records[0].`)
-//line stores.qtpl:251
+//line stores.qtpl:258
 				qw422016.E().S(field.GoName)
-//line stores.qtpl:251
+//line stores.qtpl:258
 				qw422016.N().S(`))
 `)
-//line stores.qtpl:252
+//line stores.qtpl:259
 			}
-//line stores.qtpl:253
+//line stores.qtpl:260
 		}
-//line stores.qtpl:253
+//line stores.qtpl:260
 		qw422016.N().S(`	} else {
 		return 0, nil
 	}
@@ -521,7 +528,8 @@ func (store *`)
 	r, err := builder.ExecContext(ctx)
 	if err != nil {
 		for _, record := range records {
-			if adH, adHOk := records[0].(orm.HookAfterDelete); adHOk {
+			var recordItf interface{} = record
+			if adH, adHOk := recordItf.(orm.HookAfterDelete); adHOk {
 				adH.AfterDelete(ctx, err)
 			}
 		}
@@ -531,33 +539,33 @@ func (store *`)
 }
 
 `)
-//line stores.qtpl:270
+//line stores.qtpl:278
 	}
-//line stores.qtpl:271
+//line stores.qtpl:279
 }
 
-//line stores.qtpl:271
+//line stores.qtpl:279
 func WriteStores(qq422016 qtio422016.Writer, input *StoresInput) {
-//line stores.qtpl:271
+//line stores.qtpl:279
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line stores.qtpl:271
+//line stores.qtpl:279
 	StreamStores(qw422016, input)
-//line stores.qtpl:271
+//line stores.qtpl:279
 	qt422016.ReleaseWriter(qw422016)
-//line stores.qtpl:271
+//line stores.qtpl:279
 }
 
-//line stores.qtpl:271
+//line stores.qtpl:279
 func Stores(input *StoresInput) string {
-//line stores.qtpl:271
+//line stores.qtpl:279
 	qb422016 := qt422016.AcquireByteBuffer()
-//line stores.qtpl:271
+//line stores.qtpl:279
 	WriteStores(qb422016, input)
-//line stores.qtpl:271
+//line stores.qtpl:279
 	qs422016 := string(qb422016.B)
-//line stores.qtpl:271
+//line stores.qtpl:279
 	qt422016.ReleaseByteBuffer(qb422016)
-//line stores.qtpl:271
+//line stores.qtpl:279
 	return qs422016
-//line stores.qtpl:271
+//line stores.qtpl:279
 }
