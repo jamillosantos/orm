@@ -18,22 +18,20 @@ import (
 type {%s record.Query.Type %} struct {
 	Conn orm.Connection
 	baseQuery orm.Query
+	err error
 }
 
-func New{%s record.Query.Type %}(conn orm.Connection) (*{%s record.Query.Type %}, error) {
+func New{%s record.Query.Type %}(conn orm.Connection) *{%s record.Query.Type %} {
 	qry := &{%s record.Query.Type %}{
 		Conn: conn,
 		baseQuery: orm.NewQuery({%s record.Schema.InternalRef %}),
 	}
 	ds, ok := interface{}(qry).(orm.DefaultScoper)
 	if !ok {
-		return qry, nil
+		return qry
 	}
-	err := ds.DefaultScope()
-	if err != nil {
-		return nil, err
-	}
-	return qry, nil
+	qry.err = ds.DefaultScope()
+	return qry
 }
 
 func (query *{%s record.Query.Type%}) Select(fields ...orm.SchemaField) *{%s record.Query.Type %} {
@@ -111,6 +109,10 @@ func (query *{%s record.Query.Type%}) One() (*{%s input.ModelsPackage.Ref(input.
 }
 
 func (query *{%s record.Query.Type%}) OneContext(ctx context.Context) (*{%s input.ModelsPackage.Ref(input.Package, record.Name) %}, error) {
+	if query.err != nil {
+		return nil, query.err
+	}
+
 	record := &{%s input.ModelsPackage.Ref(input.Package, record.Name) %}{}
 	err := query.OnePContext(ctx, record)
 	if err != nil {
@@ -124,6 +126,10 @@ func (query *{%s record.Query.Type%}) OneP(record *{%s input.ModelsPackage.Ref(i
 }
 
 func (query *{%s record.Query.Type%}) OnePContext(ctx context.Context, record *{%s input.ModelsPackage.Ref(input.Package, record.Name) %}) error {
+	if query.err != nil {
+		return query.err
+	}
+
 	sql, args, err := query.baseQuery.ToSql()
 	if err != nil {
 		return err
@@ -155,6 +161,10 @@ func (query *{%s record.Query.Type%}) All() (*{%s record.ResultSet.Type %}, erro
 }
 
 func (query *{%s record.Query.Type%}) AllContext(ctx context.Context) (*{%s record.ResultSet.Type %}, error) {
+	if query.err != nil {
+		return nil, query.err
+	}
+
 	sql, args, err := query.baseQuery.ToSql()
 	if err != nil {
 		return nil, err

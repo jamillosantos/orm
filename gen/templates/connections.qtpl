@@ -12,7 +12,7 @@ type connection struct {
 }
 
 {% for _, record := range input.Records %}
-func (conn *connection) {%s record.Query.Type %}() (*{%s record.Query.Type %}, error) {
+func (conn *connection) {%s record.Query.Type %}() *{%s record.Query.Type %} {
 	return New{%s record.Query.Type %}(conn)
 }
 {% endfor %}

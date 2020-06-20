@@ -46,11 +46,11 @@ func (conn *connection) `)
 //line connections.qtpl:15
 		qw422016.E().S(record.Query.Type)
 //line connections.qtpl:15
-		qw422016.N().S(`() (*`)
+		qw422016.N().S(`() *`)
 //line connections.qtpl:15
 		qw422016.E().S(record.Query.Type)
 //line connections.qtpl:15
-		qw422016.N().S(`, error) {
+		qw422016.N().S(` {
 	return New`)
 //line connections.qtpl:16
 		qw422016.E().S(record.Query.Type)

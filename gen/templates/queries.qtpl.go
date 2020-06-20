@@ -63,247 +63,249 @@ import (
 		qw422016.N().S(` struct {
 	Conn orm.Connection
 	baseQuery orm.Query
+	err error
 }
 
 func New`)
-//line queries.qtpl:23
+//line queries.qtpl:24
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:23
-		qw422016.N().S(`(conn orm.Connection) (*`)
-//line queries.qtpl:23
+//line queries.qtpl:24
+		qw422016.N().S(`(conn orm.Connection) *`)
+//line queries.qtpl:24
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:23
-		qw422016.N().S(`, error) {
+//line queries.qtpl:24
+		qw422016.N().S(` {
 	qry := &`)
-//line queries.qtpl:24
+//line queries.qtpl:25
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:24
+//line queries.qtpl:25
 		qw422016.N().S(`{
 		Conn: conn,
 		baseQuery: orm.NewQuery(`)
-//line queries.qtpl:26
+//line queries.qtpl:27
 		qw422016.E().S(record.Schema.InternalRef)
-//line queries.qtpl:26
+//line queries.qtpl:27
 		qw422016.N().S(`),
 	}
 	ds, ok := interface{}(qry).(orm.DefaultScoper)
 	if !ok {
-		return qry, nil
+		return qry
 	}
-	err := ds.DefaultScope()
-	if err != nil {
-		return nil, err
-	}
-	return qry, nil
+	qry.err = ds.DefaultScope()
+	return qry
 }
 
 func (query *`)
-//line queries.qtpl:39
+//line queries.qtpl:37
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:39
+//line queries.qtpl:37
 		qw422016.N().S(`) Select(fields ...orm.SchemaField) *`)
-//line queries.qtpl:39
+//line queries.qtpl:37
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:39
+//line queries.qtpl:37
 		qw422016.N().S(` {
 	query.baseQuery.Select(fields...)
 	return query
 }
 
 func (query *`)
-//line queries.qtpl:44
+//line queries.qtpl:42
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:44
+//line queries.qtpl:42
 		qw422016.N().S(`) AddSelect(fields ...orm.SchemaField) *`)
-//line queries.qtpl:44
+//line queries.qtpl:42
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:44
+//line queries.qtpl:42
 		qw422016.N().S(` {
 	query.baseQuery.AddSelect(fields...)
 	return query
 }
 
 func (query *`)
-//line queries.qtpl:49
+//line queries.qtpl:47
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:49
+//line queries.qtpl:47
 		qw422016.N().S(`) From(schema orm.Schema) *`)
-//line queries.qtpl:49
+//line queries.qtpl:47
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:49
+//line queries.qtpl:47
 		qw422016.N().S(` {
 	query.baseQuery.From(schema)
 	return query
 }
 
 func (query *`)
-//line queries.qtpl:54
+//line queries.qtpl:52
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:54
+//line queries.qtpl:52
 		qw422016.N().S(`) Join(joinType orm.JoinType, schema orm.Schema, conditions ...sq.Sqlizer) *`)
-//line queries.qtpl:54
+//line queries.qtpl:52
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:54
+//line queries.qtpl:52
 		qw422016.N().S(` {
 	query.baseQuery.Join(joinType, schema, conditions...)
 	return query
 }
 
 func (query *`)
-//line queries.qtpl:59
+//line queries.qtpl:57
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:59
+//line queries.qtpl:57
 		qw422016.N().S(`) InnerJoin(schema orm.Schema, conditions ...sq.Sqlizer) *`)
-//line queries.qtpl:59
+//line queries.qtpl:57
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:59
+//line queries.qtpl:57
 		qw422016.N().S(` {
 	query.baseQuery.InnerJoin(schema, conditions...)
 	return query
 }
 
 func (query *`)
-//line queries.qtpl:64
+//line queries.qtpl:62
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:64
+//line queries.qtpl:62
 		qw422016.N().S(`) LeftJoin(schema orm.Schema, conditions ...sq.Sqlizer) *`)
-//line queries.qtpl:64
+//line queries.qtpl:62
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:64
+//line queries.qtpl:62
 		qw422016.N().S(` {
 	query.baseQuery.LeftJoin(schema, conditions...)
 	return query
 }
 
 func (query *`)
-//line queries.qtpl:69
+//line queries.qtpl:67
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:69
+//line queries.qtpl:67
 		qw422016.N().S(`) RightJoin(schema orm.Schema, conditions ...sq.Sqlizer) *`)
-//line queries.qtpl:69
+//line queries.qtpl:67
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:69
+//line queries.qtpl:67
 		qw422016.N().S(` {
 	query.baseQuery.RightJoin(schema, conditions...)
 	return query
 }
 
 func (query *`)
-//line queries.qtpl:74
+//line queries.qtpl:72
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:74
+//line queries.qtpl:72
 		qw422016.N().S(`) FullJoin(schema orm.Schema, conditions ...sq.Sqlizer) *`)
-//line queries.qtpl:74
+//line queries.qtpl:72
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:74
+//line queries.qtpl:72
 		qw422016.N().S(` {
 	query.baseQuery.FullJoin(schema, conditions...)
 	return query
 }
 
 func (query *`)
-//line queries.qtpl:79
+//line queries.qtpl:77
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:79
+//line queries.qtpl:77
 		qw422016.N().S(`) Where(conditions ...sq.Sqlizer) *`)
-//line queries.qtpl:79
+//line queries.qtpl:77
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:79
+//line queries.qtpl:77
 		qw422016.N().S(` {
 	query.baseQuery.Where(conditions...)
 	return query
 }
 
 func (query *`)
-//line queries.qtpl:84
+//line queries.qtpl:82
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:84
+//line queries.qtpl:82
 		qw422016.N().S(`) Skip(skip int) *`)
-//line queries.qtpl:84
+//line queries.qtpl:82
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:84
+//line queries.qtpl:82
 		qw422016.N().S(` {
 	query.baseQuery.Skip(skip)
 	return query
 }
 
 func (query *`)
-//line queries.qtpl:89
+//line queries.qtpl:87
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:89
+//line queries.qtpl:87
 		qw422016.N().S(`) Limit(limit int) *`)
-//line queries.qtpl:89
+//line queries.qtpl:87
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:89
+//line queries.qtpl:87
 		qw422016.N().S(` {
 	query.baseQuery.Limit(limit)
 	return query
 }
 
 func (query *`)
-//line queries.qtpl:94
+//line queries.qtpl:92
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:94
+//line queries.qtpl:92
 		qw422016.N().S(`) GroupBy(fields ...orm.SchemaField) *`)
-//line queries.qtpl:94
+//line queries.qtpl:92
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:94
+//line queries.qtpl:92
 		qw422016.N().S(` {
 	query.baseQuery.GroupBy(fields...)
 	return query
 }
 
 func (query *`)
-//line queries.qtpl:99
+//line queries.qtpl:97
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:99
+//line queries.qtpl:97
 		qw422016.N().S(`) GroupByHaving(fields []orm.SchemaField, conditions ...sq.Sqlizer) *`)
-//line queries.qtpl:99
+//line queries.qtpl:97
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:99
+//line queries.qtpl:97
 		qw422016.N().S(` {
 	query.baseQuery.GroupByHaving(fields, conditions...)
 	return query
 }
 
 func (query *`)
-//line queries.qtpl:104
+//line queries.qtpl:102
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:104
+//line queries.qtpl:102
 		qw422016.N().S(`) OrderBy(fields ...orm.SchemaField) *`)
-//line queries.qtpl:104
+//line queries.qtpl:102
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:104
+//line queries.qtpl:102
 		qw422016.N().S(` {
 	query.baseQuery.OrderBy(fields...)
 	return query
 }
 
 func (query *`)
-//line queries.qtpl:109
+//line queries.qtpl:107
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:109
+//line queries.qtpl:107
 		qw422016.N().S(`) One() (*`)
-//line queries.qtpl:109
+//line queries.qtpl:107
 		qw422016.E().S(input.ModelsPackage.Ref(input.Package, record.Name))
-//line queries.qtpl:109
+//line queries.qtpl:107
 		qw422016.N().S(`, error) {
 	return query.OneContext(context.Background())
 }
 
 func (query *`)
-//line queries.qtpl:113
+//line queries.qtpl:111
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:113
+//line queries.qtpl:111
 		qw422016.N().S(`) OneContext(ctx context.Context) (*`)
-//line queries.qtpl:113
+//line queries.qtpl:111
 		qw422016.E().S(input.ModelsPackage.Ref(input.Package, record.Name))
-//line queries.qtpl:113
+//line queries.qtpl:111
 		qw422016.N().S(`, error) {
+	if query.err != nil {
+		return nil, query.err
+	}
+
 	record := &`)
-//line queries.qtpl:114
+//line queries.qtpl:116
 		qw422016.E().S(input.ModelsPackage.Ref(input.Package, record.Name))
-//line queries.qtpl:114
+//line queries.qtpl:116
 		qw422016.N().S(`{}
 	err := query.OnePContext(ctx, record)
 	if err != nil {
@@ -313,26 +315,30 @@ func (query *`)
 }
 
 func (query *`)
-//line queries.qtpl:122
+//line queries.qtpl:124
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:122
+//line queries.qtpl:124
 		qw422016.N().S(`) OneP(record *`)
-//line queries.qtpl:122
+//line queries.qtpl:124
 		qw422016.E().S(input.ModelsPackage.Ref(input.Package, record.Name))
-//line queries.qtpl:122
+//line queries.qtpl:124
 		qw422016.N().S(`) error {
 	return query.OnePContext(context.Background(), record)
 }
 
 func (query *`)
-//line queries.qtpl:126
+//line queries.qtpl:128
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:126
+//line queries.qtpl:128
 		qw422016.N().S(`) OnePContext(ctx context.Context, record *`)
-//line queries.qtpl:126
+//line queries.qtpl:128
 		qw422016.E().S(input.ModelsPackage.Ref(input.Package, record.Name))
-//line queries.qtpl:126
+//line queries.qtpl:128
 		qw422016.N().S(`) error {
+	if query.err != nil {
+		return query.err
+	}
+
 	sql, args, err := query.baseQuery.ToSql()
 	if err != nil {
 		return err
@@ -340,16 +346,16 @@ func (query *`)
 	fields := query.baseQuery.GetSelect()
 	if len(fields) == 0 {
 		fields = `)
-//line queries.qtpl:133
+//line queries.qtpl:139
 		qw422016.E().S(record.Schema.InternalRef)
-//line queries.qtpl:133
+//line queries.qtpl:139
 		qw422016.N().S(`Fields
 	}
 	columnValues := make([]interface{}, len(fields))
 	for i, field := range fields {
 		var fieldAddr interface{}
 		`)
-//line queries.qtpl:138
+//line queries.qtpl:144
 		StreamColumnAddresses(qw422016, &ColumnAddressesInput{
 			FieldName:  "field.Name()",
 			TargetName: "fieldAddr",
@@ -357,7 +363,7 @@ func (query *`)
 			ErrName:    "err",
 			Record:     record,
 		})
-//line queries.qtpl:144
+//line queries.qtpl:150
 		qw422016.N().S(`
 		if err != nil {
 			return err
@@ -368,26 +374,30 @@ func (query *`)
 }
 
 func (query *`)
-//line queries.qtpl:153
+//line queries.qtpl:159
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:153
+//line queries.qtpl:159
 		qw422016.N().S(`) All() (*`)
-//line queries.qtpl:153
+//line queries.qtpl:159
 		qw422016.E().S(record.ResultSet.Type)
-//line queries.qtpl:153
+//line queries.qtpl:159
 		qw422016.N().S(`, error) {
 	return query.AllContext(context.Background())
 }
 
 func (query *`)
-//line queries.qtpl:157
+//line queries.qtpl:163
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:157
+//line queries.qtpl:163
 		qw422016.N().S(`) AllContext(ctx context.Context) (*`)
-//line queries.qtpl:157
+//line queries.qtpl:163
 		qw422016.E().S(record.ResultSet.Type)
-//line queries.qtpl:157
+//line queries.qtpl:163
 		qw422016.N().S(`, error) {
+	if query.err != nil {
+		return nil, query.err
+	}
+
 	sql, args, err := query.baseQuery.ToSql()
 	if err != nil {
 		return nil, err
@@ -397,40 +407,40 @@ func (query *`)
 		return nil, err
 	}
 	return New`)
-//line queries.qtpl:166
+//line queries.qtpl:176
 		qw422016.E().S(record.ResultSet.Type)
-//line queries.qtpl:166
+//line queries.qtpl:176
 		qw422016.N().S(`(rs)
 }
 
 `)
-//line queries.qtpl:169
+//line queries.qtpl:179
 	}
-//line queries.qtpl:170
+//line queries.qtpl:180
 }
 
-//line queries.qtpl:170
+//line queries.qtpl:180
 func WriteQueries(qq422016 qtio422016.Writer, input *QueriesInput) {
-//line queries.qtpl:170
+//line queries.qtpl:180
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line queries.qtpl:170
+//line queries.qtpl:180
 	StreamQueries(qw422016, input)
-//line queries.qtpl:170
+//line queries.qtpl:180
 	qt422016.ReleaseWriter(qw422016)
-//line queries.qtpl:170
+//line queries.qtpl:180
 }
 
-//line queries.qtpl:170
+//line queries.qtpl:180
 func Queries(input *QueriesInput) string {
-//line queries.qtpl:170
+//line queries.qtpl:180
 	qb422016 := qt422016.AcquireByteBuffer()
-//line queries.qtpl:170
+//line queries.qtpl:180
 	WriteQueries(qb422016, input)
-//line queries.qtpl:170
+//line queries.qtpl:180
 	qs422016 := string(qb422016.B)
-//line queries.qtpl:170
+//line queries.qtpl:180
 	qt422016.ReleaseByteBuffer(qb422016)
-//line queries.qtpl:170
+//line queries.qtpl:180
 	return qs422016
-//line queries.qtpl:170
+//line queries.qtpl:180
 }
