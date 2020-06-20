@@ -339,23 +339,24 @@ func (query *`)
 		return query.err
 	}
 
-	sql, args, err := query.baseQuery.ToSql()
-	if err != nil {
-		return err
-	}
 	fields := query.baseQuery.GetSelect()
 	if len(fields) == 0 {
 		fields = `)
-//line queries.qtpl:139
+//line queries.qtpl:135
 		qw422016.E().S(record.Schema.InternalRef)
-//line queries.qtpl:139
+//line queries.qtpl:135
 		qw422016.N().S(`Fields
+		query.Select(fields...)
+	}
+	sql, args, err := query.baseQuery.ToSql()
+	if err != nil {
+		return err
 	}
 	columnValues := make([]interface{}, len(fields))
 	for i, field := range fields {
 		var fieldAddr interface{}
 		`)
-//line queries.qtpl:144
+//line queries.qtpl:145
 		StreamColumnAddresses(qw422016, &ColumnAddressesInput{
 			FieldName:  "field.Name()",
 			TargetName: "fieldAddr",
@@ -363,7 +364,7 @@ func (query *`)
 			ErrName:    "err",
 			Record:     record,
 		})
-//line queries.qtpl:150
+//line queries.qtpl:151
 		qw422016.N().S(`
 		if err != nil {
 			return err
@@ -374,25 +375,25 @@ func (query *`)
 }
 
 func (query *`)
-//line queries.qtpl:159
+//line queries.qtpl:160
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:159
+//line queries.qtpl:160
 		qw422016.N().S(`) All() (*`)
-//line queries.qtpl:159
+//line queries.qtpl:160
 		qw422016.E().S(record.ResultSet.Type)
-//line queries.qtpl:159
+//line queries.qtpl:160
 		qw422016.N().S(`, error) {
 	return query.AllContext(context.Background())
 }
 
 func (query *`)
-//line queries.qtpl:163
+//line queries.qtpl:164
 		qw422016.E().S(record.Query.Type)
-//line queries.qtpl:163
+//line queries.qtpl:164
 		qw422016.N().S(`) AllContext(ctx context.Context) (*`)
-//line queries.qtpl:163
+//line queries.qtpl:164
 		qw422016.E().S(record.ResultSet.Type)
-//line queries.qtpl:163
+//line queries.qtpl:164
 		qw422016.N().S(`, error) {
 	if query.err != nil {
 		return nil, query.err
@@ -407,40 +408,40 @@ func (query *`)
 		return nil, err
 	}
 	return New`)
-//line queries.qtpl:176
+//line queries.qtpl:177
 		qw422016.E().S(record.ResultSet.Type)
-//line queries.qtpl:176
+//line queries.qtpl:177
 		qw422016.N().S(`(rs)
 }
 
 `)
-//line queries.qtpl:179
+//line queries.qtpl:180
 	}
-//line queries.qtpl:180
+//line queries.qtpl:181
 }
 
-//line queries.qtpl:180
+//line queries.qtpl:181
 func WriteQueries(qq422016 qtio422016.Writer, input *QueriesInput) {
-//line queries.qtpl:180
+//line queries.qtpl:181
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line queries.qtpl:180
+//line queries.qtpl:181
 	StreamQueries(qw422016, input)
-//line queries.qtpl:180
+//line queries.qtpl:181
 	qt422016.ReleaseWriter(qw422016)
-//line queries.qtpl:180
+//line queries.qtpl:181
 }
 
-//line queries.qtpl:180
+//line queries.qtpl:181
 func Queries(input *QueriesInput) string {
-//line queries.qtpl:180
+//line queries.qtpl:181
 	qb422016 := qt422016.AcquireByteBuffer()
-//line queries.qtpl:180
+//line queries.qtpl:181
 	WriteQueries(qb422016, input)
-//line queries.qtpl:180
+//line queries.qtpl:181
 	qs422016 := string(qb422016.B)
-//line queries.qtpl:180
+//line queries.qtpl:181
 	qt422016.ReleaseByteBuffer(qb422016)
-//line queries.qtpl:180
+//line queries.qtpl:181
 	return qs422016
-//line queries.qtpl:180
+//line queries.qtpl:181
 }

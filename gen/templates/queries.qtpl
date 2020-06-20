@@ -130,13 +130,14 @@ func (query *{%s record.Query.Type%}) OnePContext(ctx context.Context, record *{
 		return query.err
 	}
 
-	sql, args, err := query.baseQuery.ToSql()
-	if err != nil {
-		return err
-	}
 	fields := query.baseQuery.GetSelect()
 	if len(fields) == 0 {
 		fields = {%s record.Schema.InternalRef %}Fields
+		query.Select(fields...)
+	}
+	sql, args, err := query.baseQuery.ToSql()
+	if err != nil {
+		return err
 	}
 	columnValues := make([]interface{}, len(fields))
 	for i, field := range fields {
