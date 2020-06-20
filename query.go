@@ -101,7 +101,7 @@ func (j *join) ToSql() (string, []interface{}, error) {
 
 type baseQuery struct {
 	_dirty          bool
-	conn            Connection
+	Conn            Connection
 	selectFields    []SchemaField
 	selectFieldsStr []string
 	from            Schema
@@ -114,8 +114,9 @@ type baseQuery struct {
 	limit           int
 }
 
-func NewQuery(schema Schema) Query {
+func NewQuery(conn Connection, schema Schema) Query {
 	return &baseQuery{
+		Conn: conn,
 		from: schema,
 	}
 }
@@ -222,7 +223,7 @@ func (query *baseQuery) ToSql() (string, []interface{}, error) {
 	} else {
 		selectFields = query.selectFieldsStr
 	}
-	builder := query.conn.Builder().Select(selectFields...).From(query.from.Alias())
+	builder := query.Conn.Builder().Select(selectFields...).From(query.from.Alias())
 	for _, join := range query.joins {
 		sqlJoin, argsJoin, err := join.ToSql()
 		if err != nil {

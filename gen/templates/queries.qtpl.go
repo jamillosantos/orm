@@ -61,9 +61,9 @@ import (
 		qw422016.E().S(record.Query.Type)
 //line queries.qtpl:18
 		qw422016.N().S(` struct {
-	Conn orm.Connection
+	conn      orm.Connection
 	baseQuery orm.Query
-	err error
+	err       error
 }
 
 func New`)
@@ -80,8 +80,8 @@ func New`)
 		qw422016.E().S(record.Query.Type)
 //line queries.qtpl:25
 		qw422016.N().S(`{
-		Conn: conn,
-		baseQuery: orm.NewQuery(`)
+		conn: conn,
+		baseQuery: orm.NewQuery(conn, `)
 //line queries.qtpl:27
 		qw422016.E().S(record.Schema.InternalRef)
 //line queries.qtpl:27
@@ -370,7 +370,7 @@ func (query *`)
 		}
 		columnValues[i] = fieldAddr
 	}
-	return query.Conn.QueryRowContext(ctx, sql, args...).Scan(columnValues...)
+	return query.conn.QueryRowContext(ctx, sql, args...).Scan(columnValues...)
 }
 
 func (query *`)
@@ -402,7 +402,7 @@ func (query *`)
 	if err != nil {
 		return nil, err
 	}
-	rs, err := query.Conn.QueryContext(ctx, sql, args...)
+	rs, err := query.conn.QueryContext(ctx, sql, args...)
 	if err != nil {
 		return nil, err
 	}

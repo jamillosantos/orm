@@ -16,15 +16,15 @@ import (
 
 {% for _, record := range input.Records -%}
 type {%s record.Query.Type %} struct {
-	Conn orm.Connection
+	conn      orm.Connection
 	baseQuery orm.Query
-	err error
+	err       error
 }
 
 func New{%s record.Query.Type %}(conn orm.Connection) *{%s record.Query.Type %} {
 	qry := &{%s record.Query.Type %}{
-		Conn: conn,
-		baseQuery: orm.NewQuery({%s record.Schema.InternalRef %}),
+		conn: conn,
+		baseQuery: orm.NewQuery(conn, {%s record.Schema.InternalRef %}),
 	}
 	ds, ok := interface{}(qry).(orm.DefaultScoper)
 	if !ok {
@@ -153,7 +153,7 @@ func (query *{%s record.Query.Type%}) OnePContext(ctx context.Context, record *{
 		}
 		columnValues[i] = fieldAddr
 	}
-	return query.Conn.QueryRowContext(ctx, sql, args...).Scan(columnValues...)
+	return query.conn.QueryRowContext(ctx, sql, args...).Scan(columnValues...)
 }
 
 func (query *{%s record.Query.Type%}) All() (*{%s record.ResultSet.Type %}, error) {
@@ -169,7 +169,7 @@ func (query *{%s record.Query.Type%}) AllContext(ctx context.Context) (*{%s reco
 	if err != nil {
 		return nil, err
 	}
-	rs, err := query.Conn.QueryContext(ctx, sql, args...)
+	rs, err := query.conn.QueryContext(ctx, sql, args...)
 	if err != nil {
 		return nil, err
 	}
