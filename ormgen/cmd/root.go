@@ -79,7 +79,8 @@ func resolvePath(output *document.Output, fName string) (string, error) {
 
 		fName = path.Join(cwd, fName)
 	}
-	if err := os.MkdirAll(path.Base(fName), os.ModePerm); err != nil {
+	verbosef("resolvePath(_, %s): Creating directory %s", fName, path.Base(fName))
+	if err := os.MkdirAll(path.Dir(fName), os.ModePerm); err != nil {
 		return "", err
 	}
 	return filepath.Abs(fName)
@@ -94,19 +95,21 @@ func fileExists(filename string) bool {
 }
 
 func prepareFile(fName string) (*os.File, error) {
+	verbosef("prepareFile(%s)", fName)
 	_, err := os.Stat(fName)
 	if os.IsNotExist(err) {
 		return os.Create(fName)
 	} else if err != nil {
 		return nil, err
 	}
-	fmt.Println(">>>", fName)
+	verbosef("prepareFile(%s): os.Create(%s)", fName, fName)
 	return os.Create(fName)
 }
 
 var pkgCache = make(map[string]*build.Package, 0)
 
 func parsePackage(output *document.Output, fName string) (*build.Package, error) {
+	verbosef("parsing package for %s", fName)
 	f, err := resolvePath(output, fName)
 	if err != nil {
 		return nil, err
@@ -130,6 +133,7 @@ func parsePackage(output *document.Output, fName string) (*build.Package, error)
 	return pkg, nil
 }
 
+// verbose outputs to the stdout only if the `verbose` flag is set to true.
 func verbose(args ...interface{}) {
 	if !verboseFlag {
 		return
@@ -137,6 +141,8 @@ func verbose(args ...interface{}) {
 	fmt.Println(args...)
 }
 
+// verbosef accepts formatting as input and outputs to the stdout only if the
+// `verbose` flag is set to true.
 func verbosef(format string, args ...interface{}) {
 	if !verboseFlag {
 		return
@@ -161,8 +167,8 @@ to quickly create a Cobra application.`,
 			panic(err)
 		}
 
-		verbose("Working Dir: %s", workingDirectory)
-		verbose("File: %s", fileFlag)
+		verbosef("Working Dir: %s", workingDirectory)
+		verbosef("File: %s", fileFlag)
 
 		f, err := os.Open(fileFlag)
 		if err != nil {
@@ -177,7 +183,8 @@ to quickly create a Cobra application.`,
 			panic(err)
 		}
 
-		verbose("importing ", doc.Output.Package, " from ", workingDirectory)
+		verbosef("importing %s from %s", doc.Output.Package, workingDirectory)
+
 		defaultPkg, err := build.Default.Import(doc.Output.Package, workingDirectory, build.ImportComment)
 		if err != nil {
 			panic(err)
