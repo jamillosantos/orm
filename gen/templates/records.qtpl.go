@@ -5,7 +5,7 @@
 package templates
 
 //line records.qtpl:1
-import "github.com/setare/orm/gen/document"
+import "github.com/jamillosantos/orm/gen/document"
 
 //line records.qtpl:3
 import (

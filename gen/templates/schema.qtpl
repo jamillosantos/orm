@@ -4,7 +4,7 @@
 package {%s input.Package.Name %}
 
 import (
-	"github.com/setare/orm"
+	"github.com/jamillosantos/orm"
 )
 
 {% for _, record := range input.Records -%}

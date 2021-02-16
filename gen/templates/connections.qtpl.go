@@ -30,11 +30,11 @@ package `)
 	qw422016.N().S(`
 
 import (
-	"github.com/setare/orm"
+	"github.com/jamillosantos/orm"
 )
 
 type connection struct {
-	orm.Connection
+	orm.ConnectionPgx
 }
 
 `)

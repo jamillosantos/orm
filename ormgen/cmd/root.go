@@ -12,8 +12,8 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/setare/orm/gen/document"
-	"github.com/setare/orm/gen/generator"
+	"github.com/jamillosantos/orm/gen/document"
+	"github.com/jamillosantos/orm/gen/generator"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )

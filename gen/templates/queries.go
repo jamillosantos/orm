@@ -1,6 +1,6 @@
 package templates
 
-import "github.com/setare/orm/gen/document"
+import "github.com/jamillosantos/orm/gen/document"
 
 type QueriesInput struct {
 	Package       *document.Package

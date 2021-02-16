@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/setare/orm/ormgen/cmd"
+	"github.com/jamillosantos/orm/ormgen/cmd"
 )
 
 func main() {

@@ -6,7 +6,7 @@ package {%s input.Package.Name %}
 import (
 	"github.com/pkg/errors"
 
-	"github.com/setare/orm"
+	"github.com/jamillosantos/orm"
 
 {% if !input.ModelsPackage.Equals(input.Package) %}
 	"{%s input.ModelsPackage.ImportPath %}"
@@ -15,25 +15,26 @@ import (
 
 {% for _, record := range input.Records -%}
 type {%s record.ResultSet.Type %} struct {
-	orm.ResultSet
+	orm.ResultSetPgx
 	columns []string
-	fields []interface{}
+	fields  []interface{}
 }
 
-func New{%s record.ResultSet.Type %}(rs orm.ResultSet) (*{%s record.ResultSet.Type %}, error) {
-	columns, err := rs.Columns()
-	if err != nil {
-		return nil, err
+func New{%s record.ResultSet.Type %}(rs orm.ResultSetPgx) (*{%s record.ResultSet.Type %}, error) {
+	descriptions := rs.FieldDescriptions()
+	columns := make([]string, len(descriptions))
+	for i, d := range descriptions {
+		columns[i] = string(d.Name)
 	}
 	return &{%s record.ResultSet.Type %}{
-		ResultSet: rs,
+		ResultSetPgx: rs,
 		columns: columns,
 		fields: make([]interface{}, len(columns)),
 	}, nil
 }
 
 func (rs *{%s record.ResultSet.Type %}) Scan(record *{%s input.ModelsPackage.Ref(input.Package, record.Name) %}) error {
-	err := rs.ResultSet.Err()
+	err := rs.ResultSetPgx.Err()
 	if err != nil {
 		return err
 	}
@@ -50,7 +51,7 @@ func (rs *{%s record.ResultSet.Type %}) Scan(record *{%s input.ModelsPackage.Ref
 			return err
 		}
 	}
-	return rs.ResultSet.Scan(rs.fields...)
+	return rs.ResultSetPgx.Scan(rs.fields...)
 }
 
 {% endfor -%}

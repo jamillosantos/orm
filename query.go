@@ -3,8 +3,9 @@ package orm
 import (
 	"bytes"
 	"errors"
+	"strings"
 
-	sq "github.com/Masterminds/squirrel"
+	"github.com/jamillosantos/sqlf"
 )
 
 type JoinType int
@@ -17,10 +18,28 @@ const (
 	LeftJoin
 	RightJoin
 	FullJoin
+	OuterJoin
 )
 
+func (t JoinType) String() string {
+	switch t {
+	case InnerJoin:
+		return "INNER"
+	case LeftJoin:
+		return "LEFT"
+	case RightJoin:
+		return "RIGHT"
+	case OuterJoin:
+		return "OUTER"
+	default:
+		return ""
+	}
+}
+
 type Query interface {
-	sq.Sqlizer
+	sqlf.FastSqlizer
+	sqlf.Sqlizer
+
 	// Select defines what are the fields that this query should return. If this method is called twice, the second time
 	// will override all values from the first call. If you want to stack fields, use `AddSelect` instead.
 	Select(fields ...SchemaField)
@@ -31,27 +50,31 @@ type Query interface {
 	// From defines the FROM clause for the Query
 	From(schema Schema)
 	// Join adds a join to the Query.
-	Join(joinType JoinType, schema Schema, conditions ...sq.Sqlizer)
+	Join(joinType JoinType, schema Schema, condition string, params ...interface{})
 	// Join adds a inner join to the Query.
-	InnerJoin(schema Schema, conditions ...sq.Sqlizer)
+	InnerJoin(schema Schema, condition string, params ...interface{})
 	// Join adds a left join to the Query.
-	LeftJoin(schema Schema, conditions ...sq.Sqlizer)
+	LeftJoin(schema Schema, condition string, params ...interface{})
 	// Join adds a right join to the Query.
-	RightJoin(schema Schema, conditions ...sq.Sqlizer)
+	RightJoin(schema Schema, condition string, params ...interface{})
 	// Join adds a full join to the Query.
-	FullJoin(schema Schema, conditions ...sq.Sqlizer)
+	FullJoin(schema Schema, condition string, params ...interface{})
 	// Where define the where condition for the Query.
-	Where(conditions ...sq.Sqlizer)
+	Where(condition string, params ...interface{})
+	// WhereCriteria define the where condition for the Query using criteria.
+	WhereCriteria(conditions ...sqlf.FastSqlizer)
 	// Skip sets the skip option for the Query.
 	Skip(skip int)
 	// Limit defines the pagination for the Query.
 	Limit(limit int)
 	// GroupBy defines the GROUP BY clause for the Query.
-	GroupBy(fields ...SchemaField)
-	// GroupByHaving defines the GROUP BY with the HAVING clause for the Query.
-	GroupByHaving(fields []SchemaField, conditions ...sq.Sqlizer)
+	GroupBy(fields ...interface{})
+	// GroupByX defines the GROUP BY with the HAVING clause for the Query.
+	GroupByX(func(sqlf.GroupBy))
 	// OrderBy defines the ORDER BY for the Query.
-	OrderBy(fields ...SchemaField)
+	OrderBy(fields ...interface{})
+	// OrderBy defines the ORDER BY for the Query.
+	OrderByX(f func(sqlf.OrderBy))
 }
 
 type DefaultScoper interface {
@@ -61,16 +84,16 @@ type DefaultScoper interface {
 type join struct {
 	joinType   JoinType
 	schema     Schema
-	conditions []sq.Sqlizer
+	conditions []sqlf.Sqlizer
 }
 
-func newJoin(joinType JoinType, schema Schema, conditions ...sq.Sqlizer) *join {
+func newJoin(joinType JoinType, schema Schema, conditions ...sqlf.Sqlizer) *join {
 	return &join{
 		joinType, schema, conditions,
 	}
 }
 
-func (j *join) ToSql() (string, []interface{}, error) {
+func (j *join) ToSQL() (string, []interface{}, error) {
 	buf := bytes.NewBuffer(nil)
 	a := j.schema.Alias()
 	buf.WriteString(j.schema.Table())
@@ -85,7 +108,7 @@ func (j *join) ToSql() (string, []interface{}, error) {
 			if i > 0 {
 				buf.WriteString(" AND ")
 			}
-			s, as, err := condition.ToSql()
+			s, as, err := condition.ToSQL()
 			if err != nil {
 				return "", nil, err
 			}
@@ -101,23 +124,23 @@ func (j *join) ToSql() (string, []interface{}, error) {
 
 type baseQuery struct {
 	_dirty          bool
-	Conn            Connection
+	sqlQuery        sqlf.Select
+	Conn            ConnectionPgx
 	selectFields    []SchemaField
-	selectFieldsStr []string
+	selectFieldsStr []interface{}
 	from            Schema
-	joins           []*join
-	where           []sq.Sqlizer
 	groupBy         []SchemaField
-	groupByHaving   []sq.Sqlizer
+	groupByHaving   []sqlf.Sqlizer
 	orderBy         []SchemaField
 	skip            int
 	limit           int
 }
 
-func NewQuery(conn Connection, schema Schema) Query {
+func NewQuery(conn ConnectionPgx, schema Schema) Query {
 	return &baseQuery{
-		Conn: conn,
-		from: schema,
+		Conn:     conn,
+		from:     schema,
+		sqlQuery: conn.Builder().Select(schema.Table()),
 	}
 }
 
@@ -140,82 +163,75 @@ func (query *baseQuery) AddSelect(fields ...SchemaField) {
 }
 
 func (query *baseQuery) From(schema Schema) {
-	query.from = schema
-	query._dirty = true
+	query.sqlQuery.From(schema.Table(), schema.Alias())
 }
 
-func (query *baseQuery) Join(joinType JoinType, schema Schema, conditions ...sq.Sqlizer) {
-	if query.joins == nil {
-		query.joins = make([]*join, 0, 2)
-	}
-	query.joins = append(query.joins, newJoin(joinType, schema, conditions...))
-	query._dirty = true
+func (query *baseQuery) Join(joinType JoinType, schema Schema, condition string, params ...interface{}) {
+	query.sqlQuery.JoinClause(joinType.String(), schema.Table(), schema.Alias()).On(condition, params)
 }
 
-func (query *baseQuery) InnerJoin(schema Schema, conditions ...sq.Sqlizer) {
-	query.Join(LeftJoin, schema, conditions...)
+func (query *baseQuery) InnerJoin(schema Schema, condition string, params ...interface{}) {
+	query.sqlQuery.JoinClause(InnerJoin.String(), schema.Table(), schema.Alias()).On(condition, params)
 }
 
-func (query *baseQuery) LeftJoin(schema Schema, conditions ...sq.Sqlizer) {
-	query.Join(LeftJoin, schema, conditions...)
+func (query *baseQuery) LeftJoin(schema Schema, condition string, params ...interface{}) {
+	query.sqlQuery.JoinClause(LeftJoin.String(), schema.Table(), schema.Alias()).On(condition, params)
 }
 
-func (query *baseQuery) RightJoin(schema Schema, conditions ...sq.Sqlizer) {
-	query.Join(RightJoin, schema, conditions...)
+func (query *baseQuery) RightJoin(schema Schema, condition string, params ...interface{}) {
+	query.sqlQuery.JoinClause(RightJoin.String(), schema.Table(), schema.Alias()).On(condition, params)
 }
 
-func (query *baseQuery) FullJoin(schema Schema, conditions ...sq.Sqlizer) {
-	query.Join(FullJoin, schema, conditions...)
+func (query *baseQuery) FullJoin(schema Schema, condition string, params ...interface{}) {
+	query.sqlQuery.JoinClause(FullJoin.String(), schema.Table(), schema.Alias()).On(condition, params)
 }
 
-func (query *baseQuery) Where(conditions ...sq.Sqlizer) {
-	if query.where == nil {
-		query.where = make([]sq.Sqlizer, 0, 3)
-	}
-	query.where = append(query.where, conditions...)
-	query._dirty = true
+func (query *baseQuery) Where(condition string, params ...interface{}) {
+	query.sqlQuery.Where(condition, params...)
+}
+
+func (query *baseQuery) WhereCriteria(criteria ...sqlf.FastSqlizer) {
+	query.sqlQuery.WhereCriteria(criteria...)
 }
 
 func (query *baseQuery) Skip(skip int) {
-	if (query.skip == 0 && query.skip != 0) || (query.skip != 0 && skip == 0) {
-		// If skip WAS NOT defined and now it is, the query should be regenerated.
-		// OR
-		// If skip WAS defined and now it isn't, the query should be regenerated.
-		query._dirty = true
-	}
-	query.skip = skip
+	query.sqlQuery.Offset(skip)
 }
 
 func (query *baseQuery) Limit(limit int) {
-	if (query.limit == 0 && query.limit != 0) || (query.limit != 0 && limit == 0) {
-		// If limit WAS NOT defined and now it is, the query should be regenerated.
-		// OR
-		// If limit WAS defined and now it isn't, the query should be regenerated.
-		query._dirty = true
+	query.sqlQuery.Limit(limit)
+}
+
+func (query *baseQuery) GroupBy(fields ...interface{}) {
+	query.sqlQuery.GroupBy(fields...)
+}
+
+func (query *baseQuery) GroupByX(f func(groupBy sqlf.GroupBy)) {
+	query.sqlQuery.GroupByX(f)
+}
+
+func (query *baseQuery) OrderBy(fields ...interface{}) {
+	query.sqlQuery.OrderBy(fields...)
+}
+
+func (query *baseQuery) OrderByX(f func(orderBy sqlf.OrderBy)) {
+	query.sqlQuery.OrderByX(f)
+}
+
+func (query *baseQuery) ToSQL() (string, []interface{}, error) {
+	args := make([]interface{}, 0, 2)
+	var sb strings.Builder
+	err := query.ToSQLFast(&sb, &args)
+	if err != nil {
+		return "", nil, err
 	}
-	query.limit = limit
+	return sb.String(), args, nil
 }
 
-func (query *baseQuery) GroupBy(fields ...SchemaField) {
-	query.groupBy = fields
-	query._dirty = true
-}
-
-func (query *baseQuery) GroupByHaving(fields []SchemaField, conditions ...sq.Sqlizer) {
-	query.groupBy = fields
-	query.groupByHaving = conditions
-	query._dirty = true
-}
-
-func (query *baseQuery) OrderBy(fields ...SchemaField) {
-	query.orderBy = fields
-	query._dirty = true
-}
-
-func (query *baseQuery) ToSql() (string, []interface{}, error) {
-	var selectFields []string
+func (query *baseQuery) ToSQLFast(sb *strings.Builder, args *[]interface{}) error {
+	var selectFields []interface{}
 	if query._dirty {
-		selectFields = make([]string, len(query.selectFields))
+		selectFields = make([]interface{}, len(query.selectFields))
 		for i, field := range query.selectFields {
 			selectFields[i] = field.String()
 		}
@@ -223,32 +239,6 @@ func (query *baseQuery) ToSql() (string, []interface{}, error) {
 	} else {
 		selectFields = query.selectFieldsStr
 	}
-	builder := query.Conn.Builder().Select(selectFields...).From(query.from.Alias())
-	for _, join := range query.joins {
-		sqlJoin, argsJoin, err := join.ToSql()
-		if err != nil {
-			return "", nil, err
-		}
-		var f func(join string, rest ...interface{}) sq.SelectBuilder
-		switch join.joinType {
-		case JoinNone:
-			f = builder.Join
-		case InnerJoin:
-			f = func(p string, args ...interface{}) sq.SelectBuilder {
-				return builder.JoinClause("INNER JOIN "+p, args)
-			}
-		case LeftJoin:
-			f = builder.LeftJoin
-		case RightJoin:
-			f = builder.RightJoin
-		case FullJoin:
-			f = func(p string, args ...interface{}) sq.SelectBuilder {
-				return builder.JoinClause("FULL JOIN "+p, args)
-			}
-		default:
-			return "", nil, ErrInvalidJoinType
-		}
-		builder = f(sqlJoin, argsJoin...)
-	}
-	return builder.ToSql()
+	builder := query.sqlQuery.Select(selectFields...)
+	return builder.ToSQLFast(sb, args)
 }

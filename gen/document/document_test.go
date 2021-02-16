@@ -3,7 +3,7 @@ package document_test
 import (
 	"testing"
 
-	"github.com/setare/orm/testingutils"
+	"github.com/jamillosantos/orm/testingutils"
 )
 
 func TestDocument(t *testing.T) {

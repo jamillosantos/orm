@@ -110,6 +110,7 @@ type Field struct {
 	Type       string  `yaml:"type"`
 	AutoInc    bool    `yaml:"auto_inc"`
 	PrimaryKey bool    `yaml:"pk"`
+	Tag        string  `yaml:"tag"`
 }
 
 // UnmarshalYAML

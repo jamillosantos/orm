@@ -30,7 +30,7 @@ package `)
 	qw422016.N().S(`
 
 import (
-	"github.com/setare/orm"
+	"github.com/jamillosantos/orm"
 )
 
 `)

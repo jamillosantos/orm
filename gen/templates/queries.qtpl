@@ -4,8 +4,8 @@
 package {%s input.Package.Name %}
 
 import (
-	"github.com/setare/orm"
-	sq "github.com/Masterminds/squirrel"
+	"github.com/jamillosantos/orm"
+	"github.com/jamillosantos/sqlf"
 	"context"
 	"github.com/pkg/errors"
 
@@ -16,12 +16,12 @@ import (
 
 {% for _, record := range input.Records -%}
 type {%s record.Query.Type %} struct {
-	conn      orm.Connection
+	conn      orm.ConnectionPgx
 	baseQuery orm.Query
 	err       error
 }
 
-func New{%s record.Query.Type %}(conn orm.Connection) *{%s record.Query.Type %} {
+func New{%s record.Query.Type %}(conn orm.ConnectionPgx) *{%s record.Query.Type %} {
 	qry := &{%s record.Query.Type %}{
 		conn: conn,
 		baseQuery: orm.NewQuery(conn, {%s record.Schema.InternalRef %}),
@@ -49,33 +49,33 @@ func (query *{%s record.Query.Type%}) From(schema orm.Schema) *{%s record.Query.
 	return query
 }
 
-func (query *{%s record.Query.Type%}) Join(joinType orm.JoinType, schema orm.Schema, conditions ...sq.Sqlizer) *{%s record.Query.Type %} {
-	query.baseQuery.Join(joinType, schema, conditions...)
+func (query *{%s record.Query.Type%}) Join(joinType orm.JoinType, schema orm.Schema, condition string, params ...interface{}) *{%s record.Query.Type %} {
+	query.baseQuery.Join(joinType, schema, condition, params...)
 	return query
 }
 
-func (query *{%s record.Query.Type%}) InnerJoin(schema orm.Schema, conditions ...sq.Sqlizer) *{%s record.Query.Type %} {
-	query.baseQuery.InnerJoin(schema, conditions...)
+func (query *{%s record.Query.Type%}) InnerJoin(schema orm.Schema, condition string, params ...interface{}) *{%s record.Query.Type %} {
+	query.baseQuery.InnerJoin(schema, condition, params...)
 	return query
 }
 
-func (query *{%s record.Query.Type%}) LeftJoin(schema orm.Schema, conditions ...sq.Sqlizer) *{%s record.Query.Type %} {
-	query.baseQuery.LeftJoin(schema, conditions...)
+func (query *{%s record.Query.Type%}) LeftJoin(schema orm.Schema, condition string, params ...interface{}) *{%s record.Query.Type %} {
+	query.baseQuery.LeftJoin(schema, condition, params...)
 	return query
 }
 
-func (query *{%s record.Query.Type%}) RightJoin(schema orm.Schema, conditions ...sq.Sqlizer) *{%s record.Query.Type %} {
-	query.baseQuery.RightJoin(schema, conditions...)
+func (query *{%s record.Query.Type%}) RightJoin(schema orm.Schema, condition string, params ...interface{}) *{%s record.Query.Type %} {
+	query.baseQuery.RightJoin(schema, condition, params...)
 	return query
 }
 
-func (query *{%s record.Query.Type%}) FullJoin(schema orm.Schema, conditions ...sq.Sqlizer) *{%s record.Query.Type %} {
-	query.baseQuery.FullJoin(schema, conditions...)
+func (query *{%s record.Query.Type%}) FullJoin(schema orm.Schema, condition string, params ...interface{}) *{%s record.Query.Type %} {
+	query.baseQuery.FullJoin(schema, condition, params...)
 	return query
 }
 
-func (query *{%s record.Query.Type%}) Where(conditions ...sq.Sqlizer) *{%s record.Query.Type %} {
-	query.baseQuery.Where(conditions...)
+func (query *{%s record.Query.Type%}) Where(condition string, params ...interface{}) *{%s record.Query.Type %} {
+	query.baseQuery.Where(condition, params...)
 	return query
 }
 
@@ -89,18 +89,23 @@ func (query *{%s record.Query.Type%}) Limit(limit int) *{%s record.Query.Type %}
 	return query
 }
 
-func (query *{%s record.Query.Type%}) GroupBy(fields ...orm.SchemaField) *{%s record.Query.Type %} {
+func (query *{%s record.Query.Type%}) GroupBy(fields ...interface{}) *{%s record.Query.Type %} {
 	query.baseQuery.GroupBy(fields...)
 	return query
 }
 
-func (query *{%s record.Query.Type%}) GroupByHaving(fields []orm.SchemaField, conditions ...sq.Sqlizer) *{%s record.Query.Type %} {
-	query.baseQuery.GroupByHaving(fields, conditions...)
+func (query *{%s record.Query.Type%}) GroupByX(f func (groupBy sqlf.GroupBy)) *{%s record.Query.Type %} {
+	query.baseQuery.GroupByX(f)
 	return query
 }
 
-func (query *{%s record.Query.Type%}) OrderBy(fields ...orm.SchemaField) *{%s record.Query.Type %} {
+func (query *{%s record.Query.Type%}) OrderBy(fields ...interface{}) *{%s record.Query.Type %} {
 	query.baseQuery.OrderBy(fields...)
+	return query
+}
+
+func (query *{%s record.Query.Type%}) OrderByX(f func(orderBy sqlf.OrderBy)) *{%s record.Query.Type %} {
+	query.baseQuery.OrderByX(f)
 	return query
 }
 
@@ -135,7 +140,7 @@ func (query *{%s record.Query.Type%}) OnePContext(ctx context.Context, record *{
 		fields = {%s record.Schema.InternalRef %}Fields
 		query.Select(fields...)
 	}
-	sql, args, err := query.baseQuery.ToSql()
+	sql, args, err := query.baseQuery.ToSQL()
 	if err != nil {
 		return err
 	}
@@ -154,7 +159,7 @@ func (query *{%s record.Query.Type%}) OnePContext(ctx context.Context, record *{
 		}
 		columnValues[i] = fieldAddr
 	}
-	return query.conn.QueryRowContext(ctx, sql, args...).Scan(columnValues...)
+	return query.conn.QueryRow(ctx, sql, args...).Scan(columnValues...)
 }
 
 func (query *{%s record.Query.Type%}) All() (*{%s record.ResultSet.Type %}, error) {
@@ -166,11 +171,11 @@ func (query *{%s record.Query.Type%}) AllContext(ctx context.Context) (*{%s reco
 		return nil, query.err
 	}
 
-	sql, args, err := query.baseQuery.ToSql()
+	sql, args, err := query.baseQuery.ToSQL()
 	if err != nil {
 		return nil, err
 	}
-	rs, err := query.conn.QueryContext(ctx, sql, args...)
+	rs, err := query.conn.Query(ctx, sql, args...)
 	if err != nil {
 		return nil, err
 	}

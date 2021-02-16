@@ -4,11 +4,11 @@
 package {%s input.Package.Name %}
 
 import (
-	"github.com/setare/orm"
+	"github.com/jamillosantos/orm"
 )
 
 type connection struct {
-	orm.Connection
+	orm.ConnectionPgx
 }
 
 {% for _, record := range input.Records %}

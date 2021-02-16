@@ -1,6 +1,6 @@
 package templates
 
-import "github.com/setare/orm/gen/document"
+import "github.com/jamillosantos/orm/gen/document"
 
 type ConnectionsInput struct {
 	Package *document.Package

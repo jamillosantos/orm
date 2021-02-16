@@ -1,7 +1,7 @@
 package templates
 
 import (
-	"github.com/setare/orm/gen/document"
+	"github.com/jamillosantos/orm/gen/document"
 )
 
 type ColumnAddressesInput struct {

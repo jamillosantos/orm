@@ -32,7 +32,7 @@ package `)
 import (
 	"github.com/pkg/errors"
 
-	"github.com/setare/orm"
+	"github.com/jamillosantos/orm"
 
 `)
 //line resultset.qtpl:11
@@ -60,52 +60,53 @@ import (
 		qw422016.E().S(record.ResultSet.Type)
 //line resultset.qtpl:17
 		qw422016.N().S(` struct {
-	orm.ResultSet
+	orm.ResultSetPgx
 	columns []string
-	fields []interface{}
+	fields  []interface{}
 }
 
 func New`)
 //line resultset.qtpl:23
 		qw422016.E().S(record.ResultSet.Type)
 //line resultset.qtpl:23
-		qw422016.N().S(`(rs orm.ResultSet) (*`)
+		qw422016.N().S(`(rs orm.ResultSetPgx) (*`)
 //line resultset.qtpl:23
 		qw422016.E().S(record.ResultSet.Type)
 //line resultset.qtpl:23
 		qw422016.N().S(`, error) {
-	columns, err := rs.Columns()
-	if err != nil {
-		return nil, err
+	descriptions := rs.FieldDescriptions()
+	columns := make([]string, len(descriptions))
+	for i, d := range descriptions {
+		columns[i] = string(d.Name)
 	}
 	return &`)
-//line resultset.qtpl:28
+//line resultset.qtpl:29
 		qw422016.E().S(record.ResultSet.Type)
-//line resultset.qtpl:28
+//line resultset.qtpl:29
 		qw422016.N().S(`{
-		ResultSet: rs,
+		ResultSetPgx: rs,
 		columns: columns,
 		fields: make([]interface{}, len(columns)),
 	}, nil
 }
 
 func (rs *`)
-//line resultset.qtpl:35
+//line resultset.qtpl:36
 		qw422016.E().S(record.ResultSet.Type)
-//line resultset.qtpl:35
+//line resultset.qtpl:36
 		qw422016.N().S(`) Scan(record *`)
-//line resultset.qtpl:35
+//line resultset.qtpl:36
 		qw422016.E().S(input.ModelsPackage.Ref(input.Package, record.Name))
-//line resultset.qtpl:35
+//line resultset.qtpl:36
 		qw422016.N().S(`) error {
-	err := rs.ResultSet.Err()
+	err := rs.ResultSetPgx.Err()
 	if err != nil {
 		return err
 	}
 
 	for i, column := range rs.columns {
 		`)
-//line resultset.qtpl:42
+//line resultset.qtpl:43
 		StreamColumnAddresses(qw422016, &ColumnAddressesInput{
 			FieldName:  "column",
 			TargetName: "rs.fields[i]",
@@ -113,43 +114,43 @@ func (rs *`)
 			ErrName:    "err",
 			Record:     record,
 		})
-//line resultset.qtpl:48
+//line resultset.qtpl:49
 		qw422016.N().S(`
 		if err != nil {
 			return err
 		}
 	}
-	return rs.ResultSet.Scan(rs.fields...)
+	return rs.ResultSetPgx.Scan(rs.fields...)
 }
 
 `)
-//line resultset.qtpl:56
+//line resultset.qtpl:57
 	}
-//line resultset.qtpl:57
+//line resultset.qtpl:58
 }
 
-//line resultset.qtpl:57
+//line resultset.qtpl:58
 func WriteResultSet(qq422016 qtio422016.Writer, input *ResultSetInput) {
-//line resultset.qtpl:57
+//line resultset.qtpl:58
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line resultset.qtpl:57
+//line resultset.qtpl:58
 	StreamResultSet(qw422016, input)
-//line resultset.qtpl:57
+//line resultset.qtpl:58
 	qt422016.ReleaseWriter(qw422016)
-//line resultset.qtpl:57
+//line resultset.qtpl:58
 }
 
-//line resultset.qtpl:57
+//line resultset.qtpl:58
 func ResultSet(input *ResultSetInput) string {
-//line resultset.qtpl:57
+//line resultset.qtpl:58
 	qb422016 := qt422016.AcquireByteBuffer()
-//line resultset.qtpl:57
+//line resultset.qtpl:58
 	WriteResultSet(qb422016, input)
-//line resultset.qtpl:57
+//line resultset.qtpl:58
 	qs422016 := string(qb422016.B)
-//line resultset.qtpl:57
+//line resultset.qtpl:58
 	qt422016.ReleaseByteBuffer(qb422016)
-//line resultset.qtpl:57
+//line resultset.qtpl:58
 	return qs422016
-//line resultset.qtpl:57
+//line resultset.qtpl:58
 }

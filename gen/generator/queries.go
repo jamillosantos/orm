@@ -3,7 +3,7 @@ package generator
 import (
 	"io"
 
-	"github.com/setare/orm/gen/templates"
+	"github.com/jamillosantos/orm/gen/templates"
 )
 
 type QueriesGenerator struct {

@@ -3,7 +3,7 @@ package parser
 import (
 	"errors"
 
-	"github.com/setare/orm/gen/document"
+	"github.com/jamillosantos/orm/gen/document"
 )
 
 func Parse(doc *document.Document) error {

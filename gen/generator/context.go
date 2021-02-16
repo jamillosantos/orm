@@ -1,6 +1,6 @@
 package generator
 
-import "github.com/setare/orm/gen/document"
+import "github.com/jamillosantos/orm/gen/document"
 
 type Context struct {
 	ModelsPackage document.Package
