@@ -140,7 +140,7 @@ func NewQuery(conn ConnectionPgx, schema Schema) Query {
 	return &baseQuery{
 		Conn:     conn,
 		from:     schema,
-		sqlQuery: conn.Builder().Select(schema.Table()),
+		sqlQuery: conn.Builder().Select().From(schema.Table(), schema.Alias()),
 	}
 }
 

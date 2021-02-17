@@ -34,17 +34,17 @@ type (
 	}
 
 	ConnectionPgx interface {
+		PgxDBRunner
 		DB() PgxDBProxy
 		Builder() sqlf.Builder
 		Begin(ctx context.Context) (TxPgxProxy, error)
-		BeginTx(ctx context.Context, opts *pgx.TxOptions) (TxPgxProxy, error)
-		PgxDBRunner
+		BeginTx(ctx context.Context, opts pgx.TxOptions) (TxPgxProxy, error)
 	}
 
 	PgxDBProxy interface {
 		PgxDBRunner
 		Begin(ctx context.Context) (pgx.Tx, error)
-		BeginTx(ctx context.Context, txOptions *pgx.TxOptions) (pgx.Tx, error)
+		BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, error)
 	}
 
 	baseConnection struct {
@@ -53,8 +53,8 @@ type (
 	}
 )
 
-// NewConnection will create a new instance of the `*BaseConnection`.
-func NewConnection(db PgxDBProxy, builder sqlf.Builder) ConnectionPgx {
+// NewConnectionPgx will create a new instance of the `*BaseConnection`.
+func NewConnectionPgx(db PgxDBProxy, builder sqlf.Builder) ConnectionPgx {
 	return &baseConnection{
 		_db:      db,
 		_builder: builder,
@@ -81,7 +81,7 @@ func (conn *baseConnection) Begin(ctx context.Context) (TxPgxProxy, error) {
 }
 
 // BeginTx starts a transaction with more options.
-func (conn *baseConnection) BeginTx(ctx context.Context, opts *pgx.TxOptions) (TxPgxProxy, error) {
+func (conn *baseConnection) BeginTx(ctx context.Context, opts pgx.TxOptions) (TxPgxProxy, error) {
 	tx, err := conn._db.BeginTx(ctx, opts)
 	if err != nil {
 		return nil, err
