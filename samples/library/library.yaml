@@ -9,6 +9,7 @@ records:
   # Users will store only the basic information about the user itself. Nothing
   # will be encrypted as this is just a test.
   - name: User
+    table_name: users
     fields:
       - name: "id"
         type: int
@@ -19,6 +20,7 @@ records:
       - name: "password"
         type: string
   - name: Book
+    table_name: books
     fields:
       - name: id
         type: int
