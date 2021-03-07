@@ -228,7 +228,7 @@ func (query *baseQuery) ToSQL() (string, []interface{}, error) {
 	return sb.String(), args, nil
 }
 
-func (query *baseQuery) ToSQLFast(sb *strings.Builder, args *[]interface{}) error {
+func (query *baseQuery) ToSQLFast(sb sqlf.SQLWriter, args *[]interface{}) error {
 	var selectFields []interface{}
 	if query._dirty {
 		selectFields = make([]interface{}, len(query.selectFields))
