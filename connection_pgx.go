@@ -2,9 +2,11 @@ package orm
 
 import (
 	"context"
+	"errors"
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/jamillosantos/sqlf"
 )
 
@@ -47,32 +49,32 @@ type (
 		BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, error)
 	}
 
-	baseConnection struct {
-		_db      PgxDBProxy
+	basePgxConnection struct {
+		_db      *pgxpool.Pool
 		_builder sqlf.Builder
 	}
 )
 
 // NewConnectionPgx will create a new instance of the `*BaseConnection`.
-func NewConnectionPgx(db PgxDBProxy, builder sqlf.Builder) ConnectionPgx {
-	return &baseConnection{
+func NewConnectionPgx(db *pgxpool.Pool, builder sqlf.Builder) ConnectionPgx {
+	return &basePgxConnection{
 		_db:      db,
 		_builder: builder,
 	}
 }
 
 // DB returns the real connection object for the database connection.
-func (conn *baseConnection) DB() PgxDBProxy {
-	return conn._db
+func (conn *basePgxConnection) DB() PgxDBProxy {
+	return nil
 }
 
 // Builder returns the Statement Builder used to generate the queries for this connection.
-func (conn *baseConnection) Builder() sqlf.Builder {
+func (conn *basePgxConnection) Builder() sqlf.Builder {
 	return conn._builder
 }
 
 // Begin starts a transaction.
-func (conn *baseConnection) Begin(ctx context.Context) (TxPgxProxy, error) {
+func (conn *basePgxConnection) Begin(ctx context.Context) (TxPgxProxy, error) {
 	tx, err := conn._db.Begin(ctx)
 	if err != nil {
 		return nil, err
@@ -81,7 +83,7 @@ func (conn *baseConnection) Begin(ctx context.Context) (TxPgxProxy, error) {
 }
 
 // BeginTx starts a transaction with more options.
-func (conn *baseConnection) BeginTx(ctx context.Context, opts pgx.TxOptions) (TxPgxProxy, error) {
+func (conn *basePgxConnection) BeginTx(ctx context.Context, opts pgx.TxOptions) (TxPgxProxy, error) {
 	tx, err := conn._db.BeginTx(ctx, opts)
 	if err != nil {
 		return nil, err
@@ -89,22 +91,22 @@ func (conn *baseConnection) BeginTx(ctx context.Context, opts pgx.TxOptions) (Tx
 	return NewPgxTx(tx), nil
 }
 
-func (conn *baseConnection) Exec(ctx context.Context, query string, args ...interface{}) (pgconn.CommandTag, error) {
+func (conn *basePgxConnection) Exec(ctx context.Context, query string, args ...interface{}) (pgconn.CommandTag, error) {
 	return conn._db.Exec(ctx, query, args...)
 }
 
-func (conn *baseConnection) Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error) {
+func (conn *basePgxConnection) Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error) {
 	return conn._db.Query(ctx, sql, args...)
 }
 
-func (conn *baseConnection) QueryFunc(ctx context.Context, sql string, args []interface{}, scans []interface{}, f func(pgx.QueryFuncRow) error) (pgconn.CommandTag, error) {
+func (conn *basePgxConnection) QueryFunc(ctx context.Context, sql string, args []interface{}, scans []interface{}, f func(pgx.QueryFuncRow) error) (pgconn.CommandTag, error) {
 	return conn._db.QueryFunc(ctx, sql, args, scans, f)
 }
 
-func (conn *baseConnection) QueryRow(ctx context.Context, query string, args ...interface{}) pgx.Row {
+func (conn *basePgxConnection) QueryRow(ctx context.Context, query string, args ...interface{}) pgx.Row {
 	return conn._db.QueryRow(ctx, query, args...)
 }
 
-func (conn *baseConnection) Prepare(ctx context.Context, name, query string) (*pgconn.StatementDescription, error) {
-	return conn._db.Prepare(ctx, name, query)
+func (conn *basePgxConnection) Prepare(ctx context.Context, name, query string) (*pgconn.StatementDescription, error) {
+	return nil, errors.New("operation not available")
 }

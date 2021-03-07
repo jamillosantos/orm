@@ -6,7 +6,6 @@ require (
 	github.com/Masterminds/squirrel v1.5.0
 	github.com/gertd/go-pluralize v0.1.4
 	github.com/jackc/pgconn v1.8.0
-	github.com/jackc/pgproto3 v1.1.0
 	github.com/jackc/pgproto3/v2 v2.0.6
 	github.com/jackc/pgx/v4 v4.10.1
 	github.com/jamillosantos/sqlf v0.0.0-20210217021847-d26c41fbe61b
