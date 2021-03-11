@@ -125,7 +125,7 @@ func (j *join) ToSQL() (string, []interface{}, error) {
 type baseQuery struct {
 	_dirty          bool
 	sqlQuery        sqlf.Select
-	Conn            ConnectionPgx
+	Conn            Connection
 	selectFields    []SchemaField
 	selectFieldsStr []interface{}
 	from            Schema
@@ -136,7 +136,7 @@ type baseQuery struct {
 	limit           int
 }
 
-func NewQuery(conn ConnectionPgx, schema Schema) Query {
+func NewQuery(conn Connection, schema Schema) Query {
 	return &baseQuery{
 		Conn:     conn,
 		from:     schema,

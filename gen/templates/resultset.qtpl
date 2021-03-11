@@ -15,26 +15,25 @@ import (
 
 {% for _, record := range input.Records -%}
 type {%s record.ResultSet.Type %} struct {
-	orm.ResultSetPgx
+	orm.Rows
 	columns []string
 	fields  []interface{}
 }
 
-func New{%s record.ResultSet.Type %}(rs orm.ResultSetPgx) (*{%s record.ResultSet.Type %}, error) {
-	descriptions := rs.FieldDescriptions()
-	columns := make([]string, len(descriptions))
-	for i, d := range descriptions {
-		columns[i] = string(d.Name)
+func New{%s record.ResultSet.Type %}(rs orm.Rows) (*{%s record.ResultSet.Type %}, error) {
+	columns, err := rs.Columns()
+	if err != nil {
+		return nil, err
 	}
 	return &{%s record.ResultSet.Type %}{
-		ResultSetPgx: rs,
+		Rows: rs,
 		columns: columns,
 		fields: make([]interface{}, len(columns)),
 	}, nil
 }
 
 func (rs *{%s record.ResultSet.Type %}) Scan(record *{%s input.ModelsPackage.Ref(input.Package, record.Name) %}) error {
-	err := rs.ResultSetPgx.Err()
+	err := rs.Rows.Err()
 	if err != nil {
 		return err
 	}
@@ -51,7 +50,7 @@ func (rs *{%s record.ResultSet.Type %}) Scan(record *{%s input.ModelsPackage.Ref
 			return err
 		}
 	}
-	return rs.ResultSetPgx.Scan(rs.fields...)
+	return rs.Rows.Scan(rs.fields...)
 }
 
 {% endfor -%}

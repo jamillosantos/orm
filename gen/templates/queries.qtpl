@@ -16,12 +16,12 @@ import (
 
 {% for _, record := range input.Records -%}
 type {%s record.Query.Type %} struct {
-	conn      orm.ConnectionPgx
+	conn      orm.Connection
 	baseQuery orm.Query
 	err       error
 }
 
-func New{%s record.Query.Type %}(conn orm.ConnectionPgx) *{%s record.Query.Type %} {
+func New{%s record.Query.Type %}(conn orm.Connection) *{%s record.Query.Type %} {
 	qry := &{%s record.Query.Type %}{
 		conn: conn,
 		baseQuery: orm.NewQuery(conn, {%s record.Schema.InternalRef %}),

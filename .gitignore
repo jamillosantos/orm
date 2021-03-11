@@ -17,3 +17,4 @@ vendor/
 .idea/
 
 *.coverprofile
+samples/library/.docker

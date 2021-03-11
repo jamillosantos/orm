@@ -8,7 +8,7 @@ import (
 )
 
 type connection struct {
-	orm.ConnectionPgx
+	orm.Connection
 }
 
 {% for _, record := range input.Records %}

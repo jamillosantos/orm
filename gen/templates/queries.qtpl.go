@@ -61,7 +61,7 @@ import (
 		qw422016.E().S(record.Query.Type)
 //line queries.qtpl:18
 		qw422016.N().S(` struct {
-	conn      orm.ConnectionPgx
+	conn      orm.Connection
 	baseQuery orm.Query
 	err       error
 }
@@ -70,7 +70,7 @@ func New`)
 //line queries.qtpl:24
 		qw422016.E().S(record.Query.Type)
 //line queries.qtpl:24
-		qw422016.N().S(`(conn orm.ConnectionPgx) *`)
+		qw422016.N().S(`(conn orm.Connection) *`)
 //line queries.qtpl:24
 		qw422016.E().S(record.Query.Type)
 //line queries.qtpl:24
