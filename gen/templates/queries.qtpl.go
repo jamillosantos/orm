@@ -427,34 +427,94 @@ func (query *`)
 		qw422016.N().S(`(rs)
 }
 
-`)
+func (query *`)
 //line queries.qtpl:185
+		qw422016.E().S(record.Query.Type)
+//line queries.qtpl:185
+		qw422016.N().S(`) CountP(r *int64, count ... interface{}) (*`)
+//line queries.qtpl:185
+		qw422016.E().S(record.Query.Type)
+//line queries.qtpl:185
+		qw422016.N().S(`) {
+	return query.CountContextP(context.Background(), r, count...)
+}
+
+func (query *`)
+//line queries.qtpl:189
+		qw422016.E().S(record.Query.Type)
+//line queries.qtpl:189
+		qw422016.N().S(`) CountContextP(ctx context.Context, r *int64, count ... interface{}) (*`)
+//line queries.qtpl:189
+		qw422016.E().S(record.Query.Type)
+//line queries.qtpl:189
+		qw422016.N().S(`) {
+	if query.err != nil {
+		return query
 	}
-//line queries.qtpl:186
+
+	sql, args, err := query.baseQuery.ToCountSQL(count...)
+	if err != nil {
+		query.err = err
+		return query
+	}
+
+	err = query.conn.QueryRow(ctx, sql, args...).Scan(r)
+	if err != nil {
+		query.err = err
+	}
+
+	return query
 }
 
-//line queries.qtpl:186
+func (query *`)
+//line queries.qtpl:208
+		qw422016.E().S(record.Query.Type)
+//line queries.qtpl:208
+		qw422016.N().S(`) Count(count ... interface{}) (int64, error) {
+	var r int64
+	query.CountContextP(context.Background(), &r, count...)
+	return r, query.err
+}
+
+func (query *`)
+//line queries.qtpl:214
+		qw422016.E().S(record.Query.Type)
+//line queries.qtpl:214
+		qw422016.N().S(`) CountContext(ctx context.Context, count ... interface{}) (int64, error) {
+	var r int64
+	query.CountContextP(ctx, &r, count...)
+	return r, query.err
+}
+
+
+`)
+//line queries.qtpl:221
+	}
+//line queries.qtpl:222
+}
+
+//line queries.qtpl:222
 func WriteQueries(qq422016 qtio422016.Writer, input *QueriesInput) {
-//line queries.qtpl:186
+//line queries.qtpl:222
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line queries.qtpl:186
+//line queries.qtpl:222
 	StreamQueries(qw422016, input)
-//line queries.qtpl:186
+//line queries.qtpl:222
 	qt422016.ReleaseWriter(qw422016)
-//line queries.qtpl:186
+//line queries.qtpl:222
 }
 
-//line queries.qtpl:186
+//line queries.qtpl:222
 func Queries(input *QueriesInput) string {
-//line queries.qtpl:186
+//line queries.qtpl:222
 	qb422016 := qt422016.AcquireByteBuffer()
-//line queries.qtpl:186
+//line queries.qtpl:222
 	WriteQueries(qb422016, input)
-//line queries.qtpl:186
+//line queries.qtpl:222
 	qs422016 := string(qb422016.B)
-//line queries.qtpl:186
+//line queries.qtpl:222
 	qt422016.ReleaseByteBuffer(qb422016)
-//line queries.qtpl:186
+//line queries.qtpl:222
 	return qs422016
-//line queries.qtpl:186
+//line queries.qtpl:222
 }

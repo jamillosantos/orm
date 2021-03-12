@@ -27,7 +27,9 @@ func main() {
 		panic(err)
 	}
 
-	rs, err := db.DefaultConnection.UserQuery().All()
+	var totalUsers int64
+
+	rs, err := db.DefaultConnection.UserQuery().CountP(&totalUsers).All()
 	if err != nil {
 		panic(err)
 	}
@@ -35,7 +37,8 @@ func main() {
 
 	var user models.User
 
-	fmt.Println("Listing users")
+	fmt.Printf("Listing users (%d total)", totalUsers)
+	fmt.Println()
 	for rs.Next() {
 		err := rs.Scan(&user)
 		if err != nil {
