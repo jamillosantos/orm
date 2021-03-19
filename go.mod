@@ -8,7 +8,7 @@ require (
 	github.com/jackc/pgconn v1.8.0
 	github.com/jackc/pgproto3/v2 v2.0.6
 	github.com/jackc/pgx/v4 v4.10.1
-	github.com/jamillosantos/sqlf v0.0.0-20210307111246-edd961519c5b
+	github.com/jamillosantos/sqlf v0.0.0-20210319033115-9d0d14794479
 	github.com/novln/macchiato v1.0.2
 	github.com/onsi/ginkgo v1.14.2
 	github.com/onsi/gomega v1.10.4

@@ -132,6 +132,10 @@ github.com/jamillosantos/sqlf v0.0.0-20210217021847-d26c41fbe61b h1:gF5fRS7JUd0U
 github.com/jamillosantos/sqlf v0.0.0-20210217021847-d26c41fbe61b/go.mod h1:LbpaF2/Zp8IRNG9Sclc8mram4w4strScV5Ws6zouiYw=
 github.com/jamillosantos/sqlf v0.0.0-20210307111246-edd961519c5b h1:uEhCZ37/OleZ9UmMeNQigXTYDNcat8vl2cVenQpPyM0=
 github.com/jamillosantos/sqlf v0.0.0-20210307111246-edd961519c5b/go.mod h1:LbpaF2/Zp8IRNG9Sclc8mram4w4strScV5Ws6zouiYw=
+github.com/jamillosantos/sqlf v0.0.0-20210319031115-0db4bf6fcb82 h1:2ud/vtygG+OPA8d0Q7Sv6FiuOPCRiwhxob4PNVL6jBM=
+github.com/jamillosantos/sqlf v0.0.0-20210319031115-0db4bf6fcb82/go.mod h1:LbpaF2/Zp8IRNG9Sclc8mram4w4strScV5Ws6zouiYw=
+github.com/jamillosantos/sqlf v0.0.0-20210319033115-9d0d14794479 h1:bFvK2BlVpkOs5wt6IgqLzSQmTJRPfIvXNzHkO2Ox4ew=
+github.com/jamillosantos/sqlf v0.0.0-20210319033115-9d0d14794479/go.mod h1:LbpaF2/Zp8IRNG9Sclc8mram4w4strScV5Ws6zouiYw=
 github.com/jonboulle/clockwork v0.1.0/go.mod h1:Ii8DK3G1RaLaWxj9trq07+26W01tbo22gdxWY5EU2bo=
 github.com/julienschmidt/httprouter v1.2.0/go.mod h1:SYymIcj16QtmaHHD7aYtjjsJG7VTCxuUUipMqKk8s4w=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
