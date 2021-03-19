@@ -17,10 +17,10 @@ import (
 
 {% for _, record := range input.Records -%}
 type {%s record.Store.Type %} struct {
-	conn orm.ConnectionPgx
+	conn orm.Connection
 }
 
-func New{%s record.Store.Type %}(conn orm.ConnectionPgx) *{%s record.Store.Type %} {
+func New{%s record.Store.Type %}(conn orm.Connection) *{%s record.Store.Type %} {
 	return &{%s record.Store.Type %}{
 		conn,
 	}
@@ -193,7 +193,10 @@ func (store *{%s record.Store.Type%}) UpdateContext(ctx context.Context, record 
 		}
 		return 0, err
 	}
-	rowsAffected := r.RowsAffected()
+	rowsAffected, err := r.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
 	if auHOk {
 		auH.AfterUpdate(ctx, nil, fields...)
 	}
@@ -299,7 +302,7 @@ func (store *{%s record.Store.Type%}) DeleteContext(ctx context.Context, records
 		}
 		return 0, err
 	}
-	return r.RowsAffected(), nil
+	return r.RowsAffected()
 }
 
 {% endfor -%}

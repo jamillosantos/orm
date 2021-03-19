@@ -34,7 +34,7 @@ import (
 )
 
 type connection struct {
-	orm.ConnectionPgx
+	orm.Connection
 }
 
 `)

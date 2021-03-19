@@ -75,6 +75,9 @@ type Query interface {
 	OrderBy(fields ...interface{})
 	// OrderBy defines the ORDER BY for the Query.
 	OrderByX(f func(sqlf.OrderBy))
+
+	ToCountSQL(count ...interface{}) (string, []interface{}, error)
+	ToCountQuery(count ...interface{}) sqlf.Select
 }
 
 type DefaultScoper interface {
@@ -125,7 +128,7 @@ func (j *join) ToSQL() (string, []interface{}, error) {
 type baseQuery struct {
 	_dirty          bool
 	sqlQuery        sqlf.Select
-	Conn            ConnectionPgx
+	Conn            Connection
 	selectFields    []SchemaField
 	selectFieldsStr []interface{}
 	from            Schema
@@ -136,7 +139,7 @@ type baseQuery struct {
 	limit           int
 }
 
-func NewQuery(conn ConnectionPgx, schema Schema) Query {
+func NewQuery(conn Connection, schema Schema) Query {
 	return &baseQuery{
 		Conn:     conn,
 		from:     schema,
@@ -241,4 +244,12 @@ func (query *baseQuery) ToSQLFast(sb sqlf.SQLWriter, args *[]interface{}) error 
 	}
 	builder := query.sqlQuery.Select(selectFields...)
 	return builder.ToSQLFast(sb, args)
+}
+
+func (query *baseQuery) ToCountSQL(count ...interface{}) (string, []interface{}, error) {
+	return query.sqlQuery.CountQuery(count...).ToSQL()
+}
+
+func (query *baseQuery) ToCountQuery(count ...interface{}) sqlf.Select {
+	return query.sqlQuery.CountQuery(count...)
 }

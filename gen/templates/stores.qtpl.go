@@ -64,14 +64,14 @@ import (
 		qw422016.E().S(record.Store.Type)
 //line stores.qtpl:19
 		qw422016.N().S(` struct {
-	conn orm.ConnectionPgx
+	conn orm.Connection
 }
 
 func New`)
 //line stores.qtpl:23
 		qw422016.E().S(record.Store.Type)
 //line stores.qtpl:23
-		qw422016.N().S(`(conn orm.ConnectionPgx) *`)
+		qw422016.N().S(`(conn orm.Connection) *`)
 //line stores.qtpl:23
 		qw422016.E().S(record.Store.Type)
 //line stores.qtpl:23
@@ -356,7 +356,10 @@ func (store *`)
 		}
 		return 0, err
 	}
-	rowsAffected := r.RowsAffected()
+	rowsAffected, err := r.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
 	if auHOk {
 		auH.AfterUpdate(ctx, nil, fields...)
 	}
@@ -367,43 +370,43 @@ func (store *`)
 }
 
 func (store *`)
-//line stores.qtpl:206
+//line stores.qtpl:209
 		qw422016.E().S(record.Store.Type)
-//line stores.qtpl:206
+//line stores.qtpl:209
 		qw422016.N().S(`) Delete(records ...*`)
-//line stores.qtpl:206
+//line stores.qtpl:209
 		qw422016.E().S(input.ModelsPackage.Ref(input.Package, record.Name))
-//line stores.qtpl:206
+//line stores.qtpl:209
 		qw422016.N().S(`) (int64, error) {
 	return store.DeleteContext(context.Background(), records...)
 }
 
 func (store *`)
-//line stores.qtpl:210
+//line stores.qtpl:213
 		qw422016.E().S(record.Store.Type)
-//line stores.qtpl:210
+//line stores.qtpl:213
 		qw422016.N().S(`) DeleteContext(ctx context.Context, records ...*`)
-//line stores.qtpl:210
+//line stores.qtpl:213
 		qw422016.E().S(input.ModelsPackage.Ref(input.Package, record.Name))
-//line stores.qtpl:210
+//line stores.qtpl:213
 		qw422016.N().S(`) (int64, error) {
 	builder := store.conn.Builder().Delete(`)
-//line stores.qtpl:211
+//line stores.qtpl:214
 		qw422016.E().S(record.Schema.InternalRef)
-//line stores.qtpl:211
+//line stores.qtpl:214
 		qw422016.N().S(`.Table())
 
 	if len(records) > 1 {
 		ids := make([]interface{}, len(records) * `)
-//line stores.qtpl:214
+//line stores.qtpl:217
 		qw422016.N().D(len(record.PrimaryKey))
-//line stores.qtpl:214
+//line stores.qtpl:217
 		qw422016.N().S(`)
 
 `)
-//line stores.qtpl:216
+//line stores.qtpl:219
 		if len(record.PrimaryKey) == 1 {
-//line stores.qtpl:216
+//line stores.qtpl:219
 			qw422016.N().S(`
 		for i, record := range records {
 			var recordItf interface{} = record
@@ -415,20 +418,20 @@ func (store *`)
 				}
 			}
 			ids[i] = record.`)
-//line stores.qtpl:226
+//line stores.qtpl:229
 			qw422016.E().S(record.PrimaryKey[0].GoName)
-//line stores.qtpl:226
+//line stores.qtpl:229
 			qw422016.N().S(`
 		}
 		builder = builder.Where("`)
-//line stores.qtpl:228
+//line stores.qtpl:231
 			qw422016.E().J(record.PrimaryKey[0].Name)
-//line stores.qtpl:228
+//line stores.qtpl:231
 			qw422016.N().S(` IN ?", ids)
 `)
-//line stores.qtpl:229
+//line stores.qtpl:232
 		} else {
-//line stores.qtpl:229
+//line stores.qtpl:232
 			qw422016.N().S(`
 		var (
 			pkSB strings.Builder
@@ -445,7 +448,7 @@ func (store *`)
 			}
 
 `)
-//line stores.qtpl:245
+//line stores.qtpl:248
 			var recordPkSB strings.Builder
 			for i, field := range record.PrimaryKey {
 				if i > 0 {
@@ -455,36 +458,36 @@ func (store *`)
 				recordPkSB.WriteString(" = ?")
 			}
 
-//line stores.qtpl:253
+//line stores.qtpl:256
 			qw422016.N().S(`			if i > 0 {
 				pkSB.WriteString(" OR ")
 			}
 			pkSB.WriteString("(`)
-//line stores.qtpl:257
+//line stores.qtpl:260
 			qw422016.E().J(recordPkSB.String())
-//line stores.qtpl:257
+//line stores.qtpl:260
 			qw422016.N().S(`)")
 			pks = append(pks, 
 `)
-//line stores.qtpl:259
+//line stores.qtpl:262
 			for _, field := range record.PrimaryKey {
-//line stores.qtpl:259
+//line stores.qtpl:262
 				qw422016.N().S(`				records[i].`)
-//line stores.qtpl:260
+//line stores.qtpl:263
 				qw422016.E().S(field.GoName)
-//line stores.qtpl:260
+//line stores.qtpl:263
 				qw422016.N().S(`,
 `)
-//line stores.qtpl:261
+//line stores.qtpl:264
 			}
-//line stores.qtpl:261
+//line stores.qtpl:264
 			qw422016.N().S(`			)
 		}
 		builder = builder.Where(pkSB.String(), pks...)
 `)
-//line stores.qtpl:265
+//line stores.qtpl:268
 		}
-//line stores.qtpl:265
+//line stores.qtpl:268
 		qw422016.N().S(`
 	} else if len(records) == 1 {
 		var recordItf interface{} = records[0]
@@ -496,43 +499,43 @@ func (store *`)
 		}
 
 `)
-//line stores.qtpl:275
+//line stores.qtpl:278
 		if len(record.PrimaryKey) == 1 {
-//line stores.qtpl:275
+//line stores.qtpl:278
 			qw422016.N().S(`		builder = builder.Where("`)
-//line stores.qtpl:276
+//line stores.qtpl:279
 			qw422016.E().J(record.PrimaryKey[0].Name)
-//line stores.qtpl:276
+//line stores.qtpl:279
 			qw422016.N().S(` = ?", records[0].`)
-//line stores.qtpl:276
+//line stores.qtpl:279
 			qw422016.E().S(record.PrimaryKey[0].GoName)
-//line stores.qtpl:276
+//line stores.qtpl:279
 			qw422016.N().S(`)
 `)
-//line stores.qtpl:277
+//line stores.qtpl:280
 		} else {
-//line stores.qtpl:277
+//line stores.qtpl:280
 			qw422016.N().S(`
 		builder
 `)
-//line stores.qtpl:279
+//line stores.qtpl:282
 			for _, field := range record.PrimaryKey {
-//line stores.qtpl:279
+//line stores.qtpl:282
 				qw422016.N().S(`	.Where("`)
-//line stores.qtpl:280
+//line stores.qtpl:283
 				qw422016.E().J(field.Name)
-//line stores.qtpl:280
+//line stores.qtpl:283
 				qw422016.N().S(` IN ", records[0].`)
-//line stores.qtpl:280
+//line stores.qtpl:283
 				qw422016.E().S(field.GoName)
-//line stores.qtpl:280
+//line stores.qtpl:283
 				qw422016.N().S(`)
 `)
-//line stores.qtpl:281
+//line stores.qtpl:284
 			}
-//line stores.qtpl:282
+//line stores.qtpl:285
 		}
-//line stores.qtpl:282
+//line stores.qtpl:285
 		qw422016.N().S(`	} else {
 		return 0, nil
 	}
@@ -552,37 +555,37 @@ func (store *`)
 		}
 		return 0, err
 	}
-	return r.RowsAffected(), nil
+	return r.RowsAffected()
 }
 
 `)
-//line stores.qtpl:305
+//line stores.qtpl:308
 	}
-//line stores.qtpl:306
+//line stores.qtpl:309
 }
 
-//line stores.qtpl:306
+//line stores.qtpl:309
 func WriteStores(qq422016 qtio422016.Writer, input *StoresInput) {
-//line stores.qtpl:306
+//line stores.qtpl:309
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line stores.qtpl:306
+//line stores.qtpl:309
 	StreamStores(qw422016, input)
-//line stores.qtpl:306
+//line stores.qtpl:309
 	qt422016.ReleaseWriter(qw422016)
-//line stores.qtpl:306
+//line stores.qtpl:309
 }
 
-//line stores.qtpl:306
+//line stores.qtpl:309
 func Stores(input *StoresInput) string {
-//line stores.qtpl:306
+//line stores.qtpl:309
 	qb422016 := qt422016.AcquireByteBuffer()
-//line stores.qtpl:306
+//line stores.qtpl:309
 	WriteStores(qb422016, input)
-//line stores.qtpl:306
+//line stores.qtpl:309
 	qs422016 := string(qb422016.B)
-//line stores.qtpl:306
+//line stores.qtpl:309
 	qt422016.ReleaseByteBuffer(qb422016)
-//line stores.qtpl:306
+//line stores.qtpl:309
 	return qs422016
-//line stores.qtpl:306
+//line stores.qtpl:309
 }
